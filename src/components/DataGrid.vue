@@ -5,7 +5,7 @@
       <div class="flex justify-between items-center">
         <h3 class="text-lg font-medium text-gray-900">Data Progress Tanaman</h3>
         <div class="flex space-x-2">
-          <button @click="exportToCSV" class="btn btn-secondary text-sm">
+          <button @click="exportToExcelHandler" class="btn btn-secondary text-sm">
             Export CSV
           </button>
           <button @click="refreshData" class="btn btn-primary text-sm">
@@ -323,6 +323,7 @@
 
 <script>
 import { calculateDaysDifference, formatDate, isValidDateFormat } from '../utils/dateUtils';
+import { exportToExcel } from '../utils/exportUtils.js';
 
 export default {
   name: 'DataGrid',
@@ -598,12 +599,49 @@ export default {
       if (percentage >= 50) return 'progress-fill-warning';
       return 'progress-fill-danger';
     },
-    exportToCSV() {
-      // Implementasi export ke CSV
-      console.log('Export to CSV');
+exportToExcelHandler() {
+  console.log('Exporting raw data:', this.rawData);
+  exportToExcel(this.rawData);
+},
+ exportToCSV() {
+      if (!this.processedData || this.processedData.length === 0) {
+        console.warn('Tidak ada data untuk diexport.');
+        return;
+      }
+
+      // Format data untuk CSV
+      const dataToExport = this.processedData.map(item => ({
+        'Kebun': item.kebun || '',
+        'AFD': item.afd || '',
+        'Luas Paket (Ha)': Number(item.luasPaket || 0).toFixed(2),
+        'LC Rencana': Number(item.lcRencana || 0).toFixed(2),
+        'LC Realisasi': Number(item.lcRealisasi || 0).toFixed(2),
+        'Tanggal SPPBJ': this.formatTanggal(item.tanggalSPPBJ),
+        'Jumlah Hari Kerja': item.jumlahHariKerja || 0
+      }));
+
+      // Generate CSV string
+      const csv = Papa.unparse(dataToExport);
+
+      // Buat dan unduh file
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'data-monitoring.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     },
-    refreshData() {
-      this.$emit('refresh');
+
+    formatTanggal(tgl) {
+      const date = new Date(tgl);
+      return date.toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
     }
   }
 }
