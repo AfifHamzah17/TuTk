@@ -25,6 +25,7 @@ Dashboard monitoring untuk melacak progress tanaman ulang dan tanaman konversi d
 - **Icons**: Heroicons
 
 ## Struktur Folder
+```bash
 src/
 ├── assets/          # Aset statis
 │   └── vue.svg
@@ -56,7 +57,7 @@ src/
 ├── main.js         # Entry point
 ├── style.css       # CSS global
 └── output.css      # CSS yang dihasilkan
-
+```
 
 ## Instalasi
 
