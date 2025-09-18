@@ -30,7 +30,7 @@
             <th class="w-64">Menanam Mucuna</th>
             <th class="w-64">Lubang Tanam</th>
             <th class="w-64">Menanam KS</th>
-            <th class="w-64">Total LC</th>
+            <th class="w-64">Progress TU</th>
             <th class="w-40">Tanggal SPPBJ</th>
             <th class="w-32">Hari Kerja</th>
           </tr>
@@ -255,7 +255,7 @@
               </td>
               <td class="data-grid-cell">
                 <div class="sub-grid">
-                  <div class="sub-grid-title">Total LC</div>
+                  <div class="sub-grid-title">Progress Tanam Ulang (ha)</div>
                   <div class="sub-grid-cols">
                     <div>
                       <div class="sub-grid-label">Rencana</div>
