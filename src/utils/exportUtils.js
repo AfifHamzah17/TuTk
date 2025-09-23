@@ -8,36 +8,40 @@ export function exportToExcel(rawData) {
     return;
   }
 
-  // Format header sesuai dengan tabel asli
+  // Format header sesuai dengan tabel asli yang baru
   const headers = [
     'No',
     'Kebun',
+    'Nama Paket',
     'AFD',
     'Luas Paket (ha)',
-    'Ripper Rencana',
-    'Ripper Hari Ini',
-    'Ripper SD Hari Ini',
-    'Luku Rencana',
-    'Luku Hari Ini',
-    'Luku SD Hari Ini',
-    'Tumbang/Chipping Rencana',
-    'Tumbang/Chipping Hari Ini',
-    'Tumbang/Chipping SD Hari Ini',
-    'Pembuatan Parit Rencana',
-    'Pembuatan Parit Hari Ini',
-    'Pembuatan Parit SD Hari Ini',
-    'Menanam Mucuna Rencana',
-    'Menanam Mucuna Hari Ini',
-    'Menanam Mucuna SD Hari Ini',
-    'Lubang Tanam Rencana',
-    'Lubang Tanam Hari Ini',
-    'Lubang Tanam SD Hari Ini',
-    'Menanam KS Rencana',
-    'Menanam KS Hari Ini',
-    'Menanam KS SD Hari Ini',
-    'Total LC Rencana',
-    'Total LC Realisasi',
-    'Tanggal SPPBJ',
+    'Ripper Rencana (ha)',
+    'Ripper Hari Ini (ha)',
+    'Ripper SD Hari Ini (ha)',
+    'Luku Rencana (ha)',
+    'Luku Hari Ini (ha)',
+    'Luku SD Hari Ini (ha)',
+    'Tumbang/Chipping Rencana (ha)',
+    'Tumbang/Chipping Hari Ini (ha)',
+    'Tumbang/Chipping SD Hari Ini (ha)',
+    'Pembuatan Parit Rencana (Mtr)',
+    'Pembuatan Parit Hari Ini (Mtr)',
+    'Pembuatan Parit SD Hari Ini (Mtr)',
+    'Menanam Mucuna Rencana (ha)',
+    'Menanam Mucuna Hari Ini (ha)',
+    'Menanam Mucuna SD Hari Ini (ha)',
+    'Lubang Tanam Rencana (ha)',
+    'Lubang Tanam Hari Ini (ha)',
+    'Lubang Tanam SD Hari Ini (ha)',
+    'Mempupuk Lobang Rencana (ha)',
+    'Mempupuk Lobang Hari Ini (ha)',
+    'Mempupuk Lobang SD Hari Ini (ha)',
+    'Menanam KS Rencana (ha)',
+    'Menanam KS Hari Ini (ha)',
+    'Menanam KS SD Hari Ini (ha)',
+    'Progress TU Rencana LC',
+    'Progress TU Realisasi LC',
+    'Tanggal Terbit SPPBJ',
     'Jumlah Hari Kerja'
   ];
 
@@ -68,8 +72,9 @@ export function exportToExcel(rawData) {
     if (cells[0] && cells[0].v === 'Total') continue;
     
     // Ambil data dari sel
-    const afdName = cells[2] ? cells[2].v : '';
-    const luasPaket = cells[3] ? cells[3].v : 0;
+    const namaPaket = cells[2] ? cells[2].v : '';
+    const afdName = cells[3] ? cells[3].v : '';
+    const luasPaket = cells[4] ? cells[4].v : 0;
     
     // LOGIKA BARU: Skip baris yang tidak memiliki kebun dan AFD
     if (!kebunName && !afdName) {
@@ -92,32 +97,36 @@ export function exportToExcel(rawData) {
       rows.push([
         no,
         currentKebun,
+        namaPaket,
         afdName,
         luasPaket,
-        cells[4] ? cells[4].v : 0, // Ripper Rencana
-        cells[5] ? cells[5].v : 0, // Ripper Hari Ini
-        cells[6] ? cells[6].v : 0, // Ripper SD Hari Ini
-        cells[8] ? cells[8].v : 0, // Luku Rencana
-        cells[9] ? cells[9].v : 0, // Luku Hari Ini
-        cells[10] ? cells[10].v : 0, // Luku SD Hari Ini
-        cells[12] ? cells[12].v : 0, // Tumbang/Chipping Rencana
-        cells[13] ? cells[13].v : 0, // Tumbang/Chipping Hari Ini
-        cells[14] ? cells[14].v : 0, // Tumbang/Chipping SD Hari Ini
-        cells[16] ? cells[16].v : 0, // Pembuatan Parit Rencana
-        cells[17] ? cells[17].v : 0, // Pembuatan Parit Hari Ini
-        cells[18] ? cells[18].v : 0, // Pembuatan Parit SD Hari Ini
-        cells[20] ? cells[20].v : 0, // Menanam Mucuna Rencana
-        cells[21] ? cells[21].v : 0, // Menanam Mucuna Hari Ini
-        cells[22] ? cells[22].v : 0, // Menanam Mucuna SD Hari Ini
-        cells[24] ? cells[24].v : 0, // Lubang Tanam Rencana
-        cells[25] ? cells[25].v : 0, // Lubang Tanam Hari Ini
-        cells[26] ? cells[26].v : 0, // Lubang Tanam SD Hari Ini
-        cells[28] ? cells[28].v : 0, // Menanam KS Rencana
-        cells[29] ? cells[29].v : 0, // Menanam KS Hari Ini
-        cells[30] ? cells[30].v : 0, // Menanam KS SD Hari Ini
-        cells[32] ? cells[32].v : 0, // Total LC Rencana
-        cells[33] ? cells[33].v : 0, // Total LC Realisasi
-        cells[35] ? (cells[35].f || cells[35].v) : '', // Tanggal SPPBJ
+        cells[5] ? cells[5].v : 0, // Ripper Rencana
+        cells[6] ? cells[6].v : 0, // Ripper Hari Ini
+        cells[7] ? cells[7].v : 0, // Ripper SD Hari Ini
+        cells[9] ? cells[9].v : 0, // Luku Rencana
+        cells[10] ? cells[10].v : 0, // Luku Hari Ini
+        cells[11] ? cells[11].v : 0, // Luku SD Hari Ini
+        cells[13] ? cells[13].v : 0, // Tumbang/Chipping Rencana
+        cells[14] ? cells[14].v : 0, // Tumbang/Chipping Hari Ini
+        cells[15] ? cells[15].v : 0, // Tumbang/Chipping SD Hari Ini
+        cells[17] ? cells[17].v : 0, // Pembuatan Parit Rencana
+        cells[18] ? cells[18].v : 0, // Pembuatan Parit Hari Ini
+        cells[19] ? cells[19].v : 0, // Pembuatan Parit SD Hari Ini
+        cells[21] ? cells[21].v : 0, // Menanam Mucuna Rencana
+        cells[22] ? cells[22].v : 0, // Menanam Mucuna Hari Ini
+        cells[23] ? cells[23].v : 0, // Menanam Mucuna SD Hari Ini
+        cells[25] ? cells[25].v : 0, // Lubang Tanam Rencana
+        cells[26] ? cells[26].v : 0, // Lubang Tanam Hari Ini
+        cells[27] ? cells[27].v : 0, // Lubang Tanam SD Hari Ini
+        cells[29] ? cells[29].v : 0, // Mempupuk Lobang Rencana
+        cells[30] ? cells[30].v : 0, // Mempupuk Lobang Hari Ini
+        cells[31] ? cells[31].v : 0, // Mempupuk Lobang SD Hari Ini
+        cells[29] ? cells[29].v : 0, // Menanam KS Rencana (sama dengan Mempupuk Lobang)
+        cells[30] ? cells[30].v : 0, // Menanam KS Hari Ini (sama dengan Mempupuk Lobang)
+        cells[31] ? cells[31].v : 0, // Menanam KS SD Hari Ini (sama dengan Mempupuk Lobang)
+        cells[36] ? cells[36].v : 0, // Progress TU Rencana LC
+        cells[37] ? cells[37].v : 0, // Progress TU Realisasi LC
+        cells[40] ? (cells[40].f || cells[41].v) : '', // Tanggal Terbit SPPBJ
         '' // Jumlah Hari Kerja (akan dihitung nanti)
       ]);
     }
@@ -156,7 +165,6 @@ export function exportToExcel(rawData) {
     };
   }
 
-
   // Styling data rows
   for (let R = 1; R <= headerRange.e.r; ++R) {
     // Style untuk kolom No
@@ -188,22 +196,24 @@ export function exportToExcel(rawData) {
       };
     }
     
-    // Style untuk kolom AFD
-    const afdCell = XLSX.utils.encode_cell({ r: R, c: 2 });
-    if (worksheet[afdCell]) {
-      worksheet[afdCell].s = {
-        alignment: { horizontal: "center" },
-        border: {
-          top: { style: "thin", color: { rgb: "000000" } },
-          bottom: { style: "thin", color: { rgb: "000000" } },
-          left: { style: "thin", color: { rgb: "000000" } },
-          right: { style: "thin", color: { rgb: "000000" } }
-        }
-      };
+    // Style untuk kolom Nama Paket dan AFD
+    for (let C = 2; C <= 3; ++C) {
+      const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+      if (worksheet[cellAddress]) {
+        worksheet[cellAddress].s = {
+          alignment: { horizontal: "center" },
+          border: {
+            top: { style: "thin", color: { rgb: "000000" } },
+            bottom: { style: "thin", color: { rgb: "000000" } },
+            left: { style: "thin", color: { rgb: "000000" } },
+            right: { style: "thin", color: { rgb: "000000" } }
+          }
+        };
+      }
     }
     
     // Style untuk kolom numerik
-    for (let C = 3; C <= headerRange.e.c; ++C) {
+    for (let C = 4; C <= headerRange.e.c; ++C) {
       const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
       if (worksheet[cellAddress]) {
         worksheet[cellAddress].s = {
@@ -223,6 +233,7 @@ export function exportToExcel(rawData) {
   worksheet['!cols'] = [
     { wch: 5 },   // No
     { wch: 15 },  // Kebun
+    { wch: 15 },  // Nama Paket
     { wch: 8 },   // AFD
     { wch: 15 },  // Luas Paket
     { wch: 15 },  // Ripper Rencana
@@ -243,12 +254,15 @@ export function exportToExcel(rawData) {
     { wch: 15 },  // Lubang Tanam Rencana
     { wch: 15 },  // Lubang Tanam Hari Ini
     { wch: 15 },  // Lubang Tanam SD Hari Ini
+    { wch: 15 },  // Mempupuk Lobang Rencana
+    { wch: 15 },  // Mempupuk Lobang Hari Ini
+    { wch: 15 },  // Mempupuk Lobang SD Hari Ini
     { wch: 15 },  // Menanam KS Rencana
     { wch: 15 },  // Menanam KS Hari Ini
     { wch: 15 },  // Menanam KS SD Hari Ini
-    { wch: 15 },  // Total LC Rencana
-    { wch: 15 },  // Total LC Realisasi
-    { wch: 15 },  // Tanggal SPPBJ
+    { wch: 15 },  // Progress TU Rencana LC
+    { wch: 15 },  // Progress TU Realisasi LC
+    { wch: 15 },  // Tanggal Terbit SPPBJ
     { wch: 15 }   // Jumlah Hari Kerja
   ];
 

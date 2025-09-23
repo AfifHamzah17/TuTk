@@ -6,7 +6,7 @@
         <h3 class="text-lg font-medium text-gray-900">Data Progress Tanaman</h3>
         <div class="flex space-x-2">
           <button @click="exportToExcelHandler" class="btn btn-secondary text-sm">
-            Export CSV
+            Export Excel
           </button>
           <button @click="refreshData" class="btn btn-primary text-sm">
             Refresh Data
@@ -21,6 +21,7 @@
           <tr>
             <th class="w-12">No</th>
             <th class="w-32">Kebun</th>
+            <th class="w-32">Nama Paket</th>
             <th class="w-24">AFD</th>
             <th class="w-32">Luas Paket (ha)</th>
             <th class="w-64">Ripper</th>
@@ -29,6 +30,7 @@
             <th class="w-64">Pembuatan Parit</th>
             <th class="w-64">Menanam Mucuna</th>
             <th class="w-64">Lubang Tanam</th>
+            <th class="w-64">Mempupuk Lobang</th>
             <th class="w-64">Menanam KS</th>
             <th class="w-64">Progress TU</th>
             <th class="w-40">Tanggal SPPBJ</th>
@@ -39,7 +41,7 @@
           <template v-for="(group, groupName) in groupedData" :key="groupName">
             <!-- Header Group Kebun -->
             <tr class="kebun-group">
-              <td colspan="15" class="kebun-header px-6 py-3">
+              <td colspan="16" class="kebun-header px-6 py-3">
                 <div class="flex items-center">
                   <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
@@ -54,232 +56,92 @@
             <tr v-for="(row, index) in group" :key="index" class="data-grid-row">
               <td class="data-grid-cell font-medium">{{ row.no }}</td>
               <td class="data-grid-cell kebun-name">{{ row.kebun }}</td>
+              <td class="data-grid-cell">{{ row.namaPaket }}</td>
               <td class="data-grid-cell">
                 <span class="badge badge-info">{{ row.afd }}</span>
               </td>
               <td class="data-grid-cell">{{ formatNumber(row.luasPaket) }}</td>
               <td class="data-grid-cell">
-                <div class="sub-grid">
-                  <div class="sub-grid-title">Ripper (ha)</div>
-                  <div class="sub-grid-cols">
-                    <div>
-                      <div class="sub-grid-label">Rencana</div>
-                      <div class="sub-grid-value">{{ formatNumber(row.ripper.rencana) }}</div>
-                    </div>
-                    <div>
-                      <div class="sub-grid-label">Realisasi</div>
-                      <div class="sub-grid-value">{{ formatNumber(row.ripper.sdHariIni) }}</div>
-                    </div>
-                  </div>
-                  <div class="progress-container">
-                    <div class="progress-info">
-                      <span class="progress-label">Progress</span>
-                      <span class="progress-value">{{ formatPercentage(row.ripper.persentase) }}</span>
-                    </div>
-                    <div class="progress-bar">
-                      <div 
-                        class="progress-fill progress-fill-success" 
-                        :style="{ width: `${row.ripper.persentase}%` }"
-                      ></div>
-                    </div>
-                  </div>
-                </div>
+                <ProgressItem
+                  title="Ripper"
+                  :rencana="row.ripper.rencana"
+                  :hari-ini="row.ripper.hariIni"
+                  :sd-hari-ini="row.ripper.sdHariIni"
+                  :persentase="row.ripper.persentase"
+                />
               </td>
               <td class="data-grid-cell">
-                <div class="sub-grid">
-                  <div class="sub-grid-title">Luku (ha)</div>
-                  <div class="sub-grid-cols">
-                    <div>
-                      <div class="sub-grid-label">Rencana</div>
-                      <div class="sub-grid-value">{{ formatNumber(row.luku.rencana) }}</div>
-                    </div>
-                    <div>
-                      <div class="sub-grid-label">Realisasi</div>
-                      <div class="sub-grid-value">{{ formatNumber(row.luku.sdHariIni) }}</div>
-                    </div>
-                  </div>
-                  <div class="progress-container">
-                    <div class="progress-info">
-                      <span class="progress-label">Progress</span>
-                      <span class="progress-value">{{ formatPercentage(row.luku.persentase) }}</span>
-                    </div>
-                    <div class="progress-bar">
-                      <div 
-                        class="progress-fill" 
-                        :class="getProgressColorClass(row.luku.persentase)"
-                        :style="{ width: `${row.luku.persentase}%` }"
-                      ></div>
-                    </div>
-                  </div>
-                </div>
+                <ProgressItem
+                  title="Luku"
+                  :rencana="row.luku.rencana"
+                  :hari-ini="row.luku.hariIni"
+                  :sd-hari-ini="row.luku.sdHariIni"
+                  :persentase="row.luku.persentase"
+                />
               </td>
               <td class="data-grid-cell">
-                <div class="sub-grid">
-                  <div class="sub-grid-title">Tumbang/Chipping (ha)</div>
-                  <div class="sub-grid-cols">
-                    <div>
-                      <div class="sub-grid-label">Rencana</div>
-                      <div class="sub-grid-value">{{ formatNumber(row.tumbangChipping.rencana) }}</div>
-                    </div>
-                    <div>
-                      <div class="sub-grid-label">Realisasi</div>
-                      <div class="sub-grid-value">{{ formatNumber(row.tumbangChipping.sdHariIni) }}</div>
-                    </div>
-                  </div>
-                  <div class="progress-container">
-                    <div class="progress-info">
-                      <span class="progress-label">Progress</span>
-                      <span class="progress-value">{{ formatPercentage(row.tumbangChipping.persentase) }}</span>
-                    </div>
-                    <div class="progress-bar">
-                      <div 
-                        class="progress-fill" 
-                        :class="getProgressColorClass(row.tumbangChipping.persentase)"
-                        :style="{ width: `${row.tumbangChipping.persentase}%` }"
-                      ></div>
-                    </div>
-                  </div>
-                </div>
+                <ProgressItem
+                  title="Tumbang/Chipping"
+                  :rencana="row.tumbangChipping.rencana"
+                  :hari-ini="row.tumbangChipping.hariIni"
+                  :sd-hari-ini="row.tumbangChipping.sdHariIni"
+                  :persentase="row.tumbangChipping.persentase"
+                />
               </td>
               <td class="data-grid-cell">
-                <div class="sub-grid">
-                  <div class="sub-grid-title">Pembuatan Parit (Mtr)</div>
-                  <div class="sub-grid-cols">
-                    <div>
-                      <div class="sub-grid-label">Rencana</div>
-                      <div class="sub-grid-value">{{ formatNumber(row.pembuatanParit.rencana) }}</div>
-                    </div>
-                    <div>
-                      <div class="sub-grid-label">Realisasi</div>
-                      <div class="sub-grid-value">{{ formatNumber(row.pembuatanParit.sdHariIni) }}</div>
-                    </div>
-                  </div>
-                  <div class="progress-container">
-                    <div class="progress-info">
-                      <span class="progress-label">Progress</span>
-                      <span class="progress-value">{{ formatPercentage(row.pembuatanParit.persentase) }}</span>
-                    </div>
-                    <div class="progress-bar">
-                      <div 
-                        class="progress-fill" 
-                        :class="getProgressColorClass(row.pembuatanParit.persentase)"
-                        :style="{ width: `${row.pembuatanParit.persentase}%` }"
-                      ></div>
-                    </div>
-                  </div>
-                </div>
+                <ProgressItem
+                  title="Pembuatan Parit"
+                  unit="Mtr"
+                  :rencana="row.pembuatanParit.rencana"
+                  :hari-ini="row.pembuatanParit.hariIni"
+                  :sd-hari-ini="row.pembuatanParit.sdHariIni"
+                  :persentase="row.pembuatanParit.persentase"
+                />
               </td>
               <td class="data-grid-cell">
-                <div class="sub-grid">
-                  <div class="sub-grid-title">Menanam Mucuna (ha)</div>
-                  <div class="sub-grid-cols">
-                    <div>
-                      <div class="sub-grid-label">Rencana</div>
-                      <div class="sub-grid-value">{{ formatNumber(row.menanamMucuna.rencana) }}</div>
-                    </div>
-                    <div>
-                      <div class="sub-grid-label">Realisasi</div>
-                      <div class="sub-grid-value">{{ formatNumber(row.menanamMucuna.sdHariIni) }}</div>
-                    </div>
-                  </div>
-                  <div class="progress-container">
-                    <div class="progress-info">
-                      <span class="progress-label">Progress</span>
-                      <span class="progress-value">{{ formatPercentage(row.menanamMucuna.persentase) }}</span>
-                    </div>
-                    <div class="progress-bar">
-                      <div 
-                        class="progress-fill" 
-                        :class="getProgressColorClass(row.menanamMucuna.persentase)"
-                        :style="{ width: `${row.menanamMucuna.persentase}%` }"
-                      ></div>
-                    </div>
-                  </div>
-                </div>
+                <ProgressItem
+                  title="Menanam Mucuna"
+                  :rencana="row.menanamMucuna.rencana"
+                  :hari-ini="row.menanamMucuna.hariIni"
+                  :sd-hari-ini="row.menanamMucuna.sdHariIni"
+                  :persentase="row.menanamMucuna.persentase"
+                />
               </td>
               <td class="data-grid-cell">
-                <div class="sub-grid">
-                  <div class="sub-grid-title">Lubang Tanam (ha)</div>
-                  <div class="sub-grid-cols">
-                    <div>
-                      <div class="sub-grid-label">Rencana</div>
-                      <div class="sub-grid-value">{{ formatNumber(row.lubangTanam.rencana) }}</div>
-                    </div>
-                    <div>
-                      <div class="sub-grid-label">Realisasi</div>
-                      <div class="sub-grid-value">{{ formatNumber(row.lubangTanam.sdHariIni) }}</div>
-                    </div>
-                  </div>
-                  <div class="progress-container">
-                    <div class="progress-info">
-                      <span class="progress-label">Progress</span>
-                      <span class="progress-value">{{ formatPercentage(row.lubangTanam.persentase) }}</span>
-                    </div>
-                    <div class="progress-bar">
-                      <div 
-                        class="progress-fill" 
-                        :class="getProgressColorClass(row.lubangTanam.persentase)"
-                        :style="{ width: `${row.lubangTanam.persentase}%` }"
-                      ></div>
-                    </div>
-                  </div>
-                </div>
+                <ProgressItem
+                  title="Lubang Tanam"
+                  :rencana="row.lubangTanam.rencana"
+                  :hari-ini="row.lubangTanam.hariIni"
+                  :sd-hari-ini="row.lubangTanam.sdHariIni"
+                  :persentase="row.lubangTanam.persentase"
+                />
               </td>
               <td class="data-grid-cell">
-                <div class="sub-grid">
-                  <div class="sub-grid-title">Menanam KS (ha)</div>
-                  <div class="sub-grid-cols">
-                    <div>
-                      <div class="sub-grid-label">Rencana</div>
-                      <div class="sub-grid-value">{{ formatNumber(row.menanamKS.rencana) }}</div>
-                    </div>
-                    <div>
-                      <div class="sub-grid-label">Realisasi</div>
-                      <div class="sub-grid-value">{{ formatNumber(row.menanamKS.sdHariIni) }}</div>
-                    </div>
-                  </div>
-                  <div class="progress-container">
-                    <div class="progress-info">
-                      <span class="progress-label">Progress</span>
-                      <span class="progress-value">{{ formatPercentage(row.menanamKS.persentase) }}</span>
-                    </div>
-                    <div class="progress-bar">
-                      <div 
-                        class="progress-fill" 
-                        :class="getProgressColorClass(row.menanamKS.persentase)"
-                        :style="{ width: `${row.menanamKS.persentase}%` }"
-                      ></div>
-                    </div>
-                  </div>
-                </div>
+                <ProgressItem
+                  title="Mempupuk Lobang"
+                  :rencana="row.mempupukLobang.rencana"
+                  :hari-ini="row.mempupukLobang.hariIni"
+                  :sd-hari-ini="row.mempupukLobang.sdHariIni"
+                  :persentase="row.mempupukLobang.persentase"
+                />
               </td>
               <td class="data-grid-cell">
-                <div class="sub-grid">
-                  <div class="sub-grid-title">Progress Tanam Ulang (ha)</div>
-                  <div class="sub-grid-cols">
-                    <div>
-                      <div class="sub-grid-label">Rencana</div>
-                      <div class="sub-grid-value">{{ formatNumber(row.totalLC.rencana) }}</div>
-                    </div>
-                    <div>
-                      <div class="sub-grid-label">Realisasi</div>
-                      <div class="sub-grid-value">{{ formatNumber(row.totalLC.realisasi) }}</div>
-                    </div>
-                  </div>
-                  <div class="progress-container">
-                    <div class="progress-info">
-                      <span class="progress-label">Progress</span>
-                      <span class="progress-value">{{ formatPercentage(row.totalLC.persentase) }}</span>
-                    </div>
-                    <div class="progress-bar">
-                      <div 
-                        class="progress-fill" 
-                        :class="getProgressColorClass(row.totalLC.persentase)"
-                        :style="{ width: `${row.totalLC.persentase}%` }"
-                      ></div>
-                    </div>
-                  </div>
-                </div>
+                <ProgressItem
+                  title="Menanam KS"
+                  :rencana="row.menanamKS.rencana"
+                  :hari-ini="row.menanamKS.hariIni"
+                  :sd-hari-ini="row.menanamKS.sdHariIni"
+                  :persentase="row.menanamKS.persentase"
+                />
+              </td>
+              <td class="data-grid-cell">
+                <ProgressItem
+                  title="Progress Tanam Ulang"
+                  :rencana="row.totalLC.rencana"
+                  :hari-ini="row.totalLC.realisasi"
+                  :sd-hari-ini="row.totalLC.realisasi"
+                  :persentase="row.totalLC.persentase"
+                />
               </td>
               <td class="data-grid-cell">
                 <div class="flex items-center">
@@ -324,9 +186,13 @@
 <script>
 import { calculateDaysDifference, formatDate, isValidDateFormat } from '../utils/dateUtils';
 import { exportToExcel } from '../utils/exportUtils.js';
+import ProgressItem from './ProgressItem.vue';
 
 export default {
   name: 'DataGrid',
+  components: {
+    ProgressItem
+  },
   props: {
     rawData: Object,
     filters: {
@@ -375,8 +241,9 @@ export default {
         if (cells[0] && cells[0].v === 'Total') continue;
         
         // Ambil data dari sel
-        const afdName = cells[2] ? cells[2].v : '';
-        const luasPaket = cells[3] ? cells[3].v : 0;
+        const namaPaket = cells[2] ? cells[2].v : '';
+        const afdName = cells[3] ? cells[3].v : '';
+        const luasPaket = cells[4] ? cells[4].v : 0;
         
         // LOGIKA BARU: Skip baris yang tidak memiliki kebun dan AFD
         if (!kebunName && !afdName) {
@@ -394,54 +261,60 @@ export default {
         }
         
         // Ripper
-        const ripperRencana = cells[4] ? cells[4].v : 0;
-        const ripperHariIni = cells[5] ? cells[5].v : 0;
-        const ripperSdHariIni = cells[6] ? cells[6].v : 0;
+        const ripperRencana = cells[5] ? cells[5].v : 0;
+        const ripperHariIni = cells[6] ? cells[6].v : 0;
+        const ripperSdHariIni = cells[7] ? cells[7].v : 0;
         const ripperPersentase = calculatePercentage(ripperSdHariIni, ripperRencana);
         
         // Luku
-        const lukuRencana = cells[8] ? cells[8].v : 0;
-        const lukuHariIni = cells[9] ? cells[9].v : 0;
-        const lukuSdHariIni = cells[10] ? cells[10].v : 0;
+        const lukuRencana = cells[9] ? cells[9].v : 0;
+        const lukuHariIni = cells[10] ? cells[10].v : 0;
+        const lukuSdHariIni = cells[11] ? cells[11].v : 0;
         const lukuPersentase = calculatePercentage(lukuSdHariIni, lukuRencana);
         
         // Tumbang/Chipping
-        const tumbangRencana = cells[12] ? cells[12].v : 0;
-        const tumbangHariIni = cells[13] ? cells[13].v : 0;
-        const tumbangSdHariIni = cells[14] ? cells[14].v : 0;
+        const tumbangRencana = cells[13] ? cells[13].v : 0;
+        const tumbangHariIni = cells[14] ? cells[14].v : 0;
+        const tumbangSdHariIni = cells[15] ? cells[15].v : 0;
         const tumbangPersentase = calculatePercentage(tumbangSdHariIni, tumbangRencana);
         
         // Pembuatan Parit
-        const paritRencana = cells[16] ? cells[16].v : 0;
-        const paritHariIni = cells[17] ? cells[17].v : 0;
-        const paritSdHariIni = cells[18] ? cells[18].v : 0;
+        const paritRencana = cells[17] ? cells[17].v : 0;
+        const paritHariIni = cells[18] ? cells[18].v : 0;
+        const paritSdHariIni = cells[19] ? cells[19].v : 0;
         const paritPersentase = calculatePercentage(paritSdHariIni, paritRencana);
         
         // Menanam Mucuna
-        const mucunaRencana = cells[20] ? cells[20].v : 0;
-        const mucunaHariIni = cells[21] ? cells[21].v : 0;
-        const mucunaSdHariIni = cells[22] ? cells[22].v : 0;
+        const mucunaRencana = cells[21] ? cells[21].v : 0;
+        const mucunaHariIni = cells[22] ? cells[22].v : 0;
+        const mucunaSdHariIni = cells[23] ? cells[23].v : 0;
         const mucunaPersentase = calculatePercentage(mucunaSdHariIni, mucunaRencana);
         
         // Lubang Tanam
-        const lubangRencana = cells[24] ? cells[24].v : 0;
-        const lubangHariIni = cells[25] ? cells[25].v : 0;
-        const lubangSdHariIni = cells[26] ? cells[26].v : 0;
+        const lubangRencana = cells[25] ? cells[25].v : 0;
+        const lubangHariIni = cells[26] ? cells[26].v : 0;
+        const lubangSdHariIni = cells[27] ? cells[27].v : 0;
         const lubangPersentase = calculatePercentage(lubangSdHariIni, lubangRencana);
         
+        // Mempupuk Lobang
+        const mempupukLobangRencana = cells[29] ? cells[29].v : 0;
+        const mempupukLobangHariIni = cells[30] ? cells[30].v : 0;
+        const mempupukLobangSdHariIni = cells[31] ? cells[31].v : 0;
+        const mempupukLobangPersentase = calculatePercentage(mempupukLobangSdHariIni, mempupukLobangRencana);
+        
         // Menanam KS
-        const ksRencana = cells[28] ? cells[28].v : 0;
-        const ksHariIni = cells[29] ? cells[29].v : 0;
-        const ksSdHariIni = cells[30] ? cells[30].v : 0;
+        const ksRencana = cells[33] ? cells[33].v : 0; // Sama dengan Mempupuk Lobang
+        const ksHariIni = cells[34] ? cells[34].v : 0; // Sama dengan Mempupuk Lobang
+        const ksSdHariIni = cells[35] ? cells[35].v : 0; // Sama dengan Mempupuk Lobang
         const ksPersentase = calculatePercentage(ksSdHariIni, ksRencana);
         
         // Total LC
-        const lcRencana = cells[32] ? cells[32].v : 0;
-        const lcRealisasi = cells[33] ? cells[33].v : 0;
+        const lcRencana = cells[37] ? cells[37].v : 0;
+        const lcRealisasi = cells[38] ? cells[38].v : 0;
         const lcPersentase = calculatePercentage(lcRealisasi, lcRencana);
         
         // Tanggal SPPBJ
-        const tanggalSPPBJ = cells[35] ? (cells[35].f || cells[35].v) : '';
+        const tanggalSPPBJ = cells[40] ? (cells[40].f || cells[40].v) : '';
         
         // Hitung jumlah hari kerja secara otomatis
         let jumlahHariKerja = 0;
@@ -455,6 +328,7 @@ export default {
           result.push({
             no: no,
             kebun: currentKebun,
+            namaPaket: namaPaket,
             afd: afdName,
             luasPaket: luasPaket,
             ripper: {
@@ -493,6 +367,12 @@ export default {
               sdHariIni: lubangSdHariIni,
               persentase: lubangPersentase
             },
+            mempupukLobang: {
+              rencana: mempupukLobangRencana,
+              hariIni: mempupukLobangHariIni,
+              sdHariIni: mempupukLobangSdHariIni,
+              persentase: mempupukLobangPersentase
+            },
             menanamKS: {
               rencana: ksRencana,
               hariIni: ksHariIni,
@@ -509,8 +389,8 @@ export default {
           });
         }
       }
-        console.log("DataGrid: Hasil processedData:", result);
-
+      
+      // console.log("DataGrid: Hasil processedData:", result);
       return result;
     },
     
@@ -534,6 +414,7 @@ export default {
           const searchLower = this.filters.search.toLowerCase();
           const searchableText = [
             row.kebun,
+            row.namaPaket,
             row.afd,
             row.luasPaket.toString(),
             row.ripper.rencana.toString(),
@@ -548,6 +429,8 @@ export default {
             row.menanamMucuna.sdHariIni.toString(),
             row.lubangTanam.rencana.toString(),
             row.lubangTanam.sdHariIni.toString(),
+            row.mempupukLobang.rencana.toString(),
+            row.mempupukLobang.sdHariIni.toString(),
             row.menanamKS.rencana.toString(),
             row.menanamKS.sdHariIni.toString(),
             row.totalLC.rencana.toString(),
@@ -599,49 +482,12 @@ export default {
       if (percentage >= 50) return 'progress-fill-warning';
       return 'progress-fill-danger';
     },
-exportToExcelHandler() {
-  console.log('Exporting raw data:', this.rawData);
-  exportToExcel(this.rawData);
-},
- exportToCSV() {
-      if (!this.processedData || this.processedData.length === 0) {
-        console.warn('Tidak ada data untuk diexport.');
-        return;
-      }
-
-      // Format data untuk CSV
-      const dataToExport = this.processedData.map(item => ({
-        'Kebun': item.kebun || '',
-        'AFD': item.afd || '',
-        'Luas Paket (Ha)': Number(item.luasPaket || 0).toFixed(2),
-        'LC Rencana': Number(item.lcRencana || 0).toFixed(2),
-        'LC Realisasi': Number(item.lcRealisasi || 0).toFixed(2),
-        'Tanggal SPPBJ': this.formatTanggal(item.tanggalSPPBJ),
-        'Jumlah Hari Kerja': item.jumlahHariKerja || 0
-      }));
-
-      // Generate CSV string
-      const csv = Papa.unparse(dataToExport);
-
-      // Buat dan unduh file
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'data-monitoring.csv');
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    exportToExcelHandler() {
+      console.log('Exporting raw data:', this.rawData);
+      exportToExcel(this.rawData);
     },
-
-    formatTanggal(tgl) {
-      const date = new Date(tgl);
-      return date.toLocaleDateString('id-ID', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-      });
+    refreshData() {
+      this.$emit('refresh');
     }
   }
 }
