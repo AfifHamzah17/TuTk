@@ -48,17 +48,24 @@ export default {
           plugins: {
             legend: {
               position: 'top',
+              labels: {
+                // Tampilkan semua item tanpa batasan
+                boxWidth: 15,
+                padding: 15,
+                usePointStyle: true,
+                pointStyle: 'circle',
+                font: {
+                  size: 11
+                }
+              }
             },
             tooltip: {
               mode: 'index',
               intersect: false,
             }
           },
-          scales: {
-            y: {
-              beginAtZero: true
-            }
-          }
+          // Gunakan options dari props jika ada
+          ...(props.data.options || {})
         }
       });
     };
@@ -77,3 +84,26 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.card {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.card-body {
+  padding: 1rem;
+}
+
+.chart-container {
+  position: relative;
+  height: 300px;
+}
+</style>

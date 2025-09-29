@@ -38,7 +38,7 @@
           </tr>
         </thead>
         <tbody class="data-grid-body">
-          <template v-for="(group, groupName) in groupedData" :key="groupName">
+          <template v-for="(group, groupName) in paginatedGroupedData" :key="groupName">
             <!-- Header Group Kebun -->
             <tr class="kebun-group">
               <td colspan="16" class="kebun-header px-6 py-3">
@@ -168,15 +168,37 @@
     <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
       <div class="flex items-center justify-between">
         <div class="text-sm text-gray-700">
-          Menampilkan <span class="font-medium">{{ filteredData.length }}</span> dari <span class="font-medium">{{ processedData.length }}</span> data
+          Menampilkan <span class="font-medium">{{ startItem }}-{{ endItem }}</span> dari <span class="font-medium">{{ filteredData.length }}</span> data
         </div>
-        <div class="flex space-x-2">
-          <button class="btn btn-secondary text-sm">
-            Previous
-          </button>
-          <button class="btn btn-primary text-sm">
-            Next
-          </button>
+        <div class="flex items-center space-x-8">
+          <!-- Items per page control -->
+          <div class="flex items-center space-x-2">
+            <span class="text-sm text-gray-700">Items per page:</span>
+            <div class="flex items-center border rounded">
+              <select 
+                v-model="itemsPerPage" 
+                @change="handleItemsPerPageChange" 
+                class="border-none rounded-l px-2 py-1 text-sm focus:outline-none"
+              >
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="all">All</option>
+              </select>
+            </div>
+          </div>
+          
+          <!-- Pagination buttons -->
+          <div class="flex space-x-2">
+            <button @click="prevPage" :disabled="currentPage === 1" class="btn btn-secondary text-sm">
+              Previous
+            </button>
+            <button @click="nextPage" :disabled="currentPage === totalPages" class="btn btn-primary text-sm">
+              Next
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -205,6 +227,13 @@ export default {
     }
   },
   emits: ['refresh'],
+  data() {
+    return {
+      currentPage: 1,
+      itemsPerPage: 10,
+      customItemsPerPage: 10,
+    };
+  },
   computed: {
     processedData() {
       if (!this.rawData || !this.rawData.table || !this.rawData.table.rows) return [];
@@ -460,6 +489,47 @@ export default {
       });
       
       return groups;
+    },
+
+    // Calculate pagination values
+    totalPages() {
+      if (this.itemsPerPage === 'all') return 1;
+      return Math.ceil(this.filteredData.length / this.itemsPerPage);
+    },
+    
+    startItem() {
+      if (this.itemsPerPage === 'all') return 1;
+      return (this.currentPage - 1) * this.itemsPerPage + 1;
+    },
+    
+    endItem() {
+      if (this.itemsPerPage === 'all') return this.filteredData.length;
+      const end = this.currentPage * this.itemsPerPage;
+      return end > this.filteredData.length ? this.filteredData.length : end;
+    },
+    
+    // Create paginated version of grouped data
+    paginatedGroupedData() {
+      if (this.itemsPerPage === 'all') {
+        return this.groupedData;
+      }
+      
+      const result = {};
+      const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+      const endIndex = startIndex + this.itemsPerPage;
+      
+      // Get the slice of data for the current page
+      const pageData = this.filteredData.slice(startIndex, endIndex);
+      
+      // Group the page data
+      pageData.forEach(row => {
+        if (!result[row.kebun]) {
+          result[row.kebun] = [];
+        }
+        result[row.kebun].push(row);
+      });
+      
+      return result;
     }
   },
   methods: {
@@ -488,6 +558,40 @@ export default {
     },
     refreshData() {
       this.$emit('refresh');
+    },
+    resetPagination() {
+      this.currentPage = 1;
+    },
+    prevPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+      }
+    },
+    nextPage() {
+      if (this.currentPage < this.totalPages) {
+        this.currentPage++;
+      }
+    },
+    handleItemsPerPageChange() {
+      if (this.itemsPerPage !== 'custom') {
+        this.resetPagination();
+      }
+    },
+    applyCustomItemsPerPage() {
+      if (this.customItemsPerPage > 0) {
+        this.itemsPerPage = this.customItemsPerPage;
+        this.resetPagination();
+      }
+    }
+  },
+  watch: {
+    filteredData() {
+      this.resetPagination();
+    },
+    itemsPerPage(newVal) {
+      if (newVal !== 'custom' && newVal !== 'all') {
+        this.customItemsPerPage = newVal;
+      }
     }
   }
 }
