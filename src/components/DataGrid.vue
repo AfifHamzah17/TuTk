@@ -31,6 +31,8 @@
             <th class="w-64">Menanam Mucuna</th>
             <th class="w-64">Lubang Tanam</th>
             <th class="w-64">Mempupuk Lobang</th>
+            <th class="w-64">Pembuatan Jalan</th> <!-- Kolom baru -->
+            <th class="w-64">Pembuatan Teras</th> <!-- Kolom baru -->
             <th class="w-64">Menanam KS</th>
             <th class="w-64">Progress TU</th>
             <th class="w-40">Tanggal SPPBJ</th>
@@ -41,7 +43,7 @@
           <template v-for="(group, groupName) in paginatedGroupedData" :key="groupName">
             <!-- Header Group Kebun -->
             <tr class="kebun-group">
-              <td colspan="16" class="kebun-header px-6 py-3">
+              <td colspan="18" class="kebun-header px-6 py-3"> <!-- Ubah colspan dari 16 ke 18 -->
                 <div class="flex items-center">
                   <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
@@ -123,6 +125,28 @@
                   :hari-ini="row.mempupukLobang.hariIni"
                   :sd-hari-ini="row.mempupukLobang.sdHariIni"
                   :persentase="row.mempupukLobang.persentase"
+                />
+              </td>
+              <!-- Kolom baru: Pembuatan Jalan -->
+              <td class="data-grid-cell">
+                <ProgressItem
+                  title="Pembuatan Jalan"
+                  unit="Mtr"
+                  :rencana="row.pembuatanJalan.rencana"
+                  :hari-ini="row.pembuatanJalan.hariIni"
+                  :sd-hari-ini="row.pembuatanJalan.sdHariIni"
+                  :persentase="row.pembuatanJalan.persentase"
+                />
+              </td>
+              <!-- Kolom baru: Pembuatan Teras -->
+              <td class="data-grid-cell">
+                <ProgressItem
+                  title="Pembuatan Teras"
+                  unit="Mtr"
+                  :rencana="row.pembuatanTeras.rencana"
+                  :hari-ini="row.pembuatanTeras.hariIni"
+                  :sd-hari-ini="row.pembuatanTeras.sdHariIni"
+                  :persentase="row.pembuatanTeras.persentase"
                 />
               </td>
               <td class="data-grid-cell">
@@ -331,19 +355,31 @@ export default {
         const mempupukLobangSdHariIni = cells[31] ? cells[31].v : 0;
         const mempupukLobangPersentase = calculatePercentage(mempupukLobangSdHariIni, mempupukLobangRencana);
         
+        // Pembuatan Jalan (Kolom baru)
+        const pembuatanJalanRencana = cells[37] ? cells[37].v : 0; // AL
+        const pembuatanJalanHariIni = cells[38] ? cells[38].v : 0; // AM
+        const pembuatanJalanSdHariIni = cells[39] ? cells[39].v : 0; // AN
+        const pembuatanJalanPersentase = calculatePercentage(pembuatanJalanSdHariIni, pembuatanJalanRencana);
+        
+        // Pembuatan Teras (Kolom baru)
+        const pembuatanTerasRencana = cells[41] ? cells[41].v : 0; // AP
+        const pembuatanTerasHariIni = cells[42] ? cells[42].v : 0; // AQ
+        const pembuatanTerasSdHariIni = cells[43] ? cells[43].v : 0; // AR
+        const pembuatanTerasPersentase = calculatePercentage(pembuatanTerasSdHariIni, pembuatanTerasRencana);
+        
         // Menanam KS
-        const ksRencana = cells[33] ? cells[33].v : 0; // Sama dengan Mempupuk Lobang
-        const ksHariIni = cells[34] ? cells[34].v : 0; // Sama dengan Mempupuk Lobang
-        const ksSdHariIni = cells[35] ? cells[35].v : 0; // Sama dengan Mempupuk Lobang
+        const ksRencana = cells[33] ? cells[33].v : 0; 
+        const ksHariIni = cells[34] ? cells[34].v : 0; 
+        const ksSdHariIni = cells[35] ? cells[35].v : 0; 
         const ksPersentase = calculatePercentage(ksSdHariIni, ksRencana);
         
-        // Total LC
-        const lcRencana = cells[37] ? cells[37].v : 0;
-        const lcRealisasi = cells[38] ? cells[38].v : 0;
+        // Total LC (sekarang di kolom AT dan AU)
+        const lcRencana = cells[45] ? cells[45].v : 0; // AT
+        const lcRealisasi = cells[46] ? cells[46].v : 0; // AU
         const lcPersentase = calculatePercentage(lcRealisasi, lcRencana);
         
-        // Tanggal SPPBJ
-        const tanggalSPPBJ = cells[40] ? (cells[40].f || cells[40].v) : '';
+        // Tanggal SPPBJ (sekarang di kolom AV)
+        const tanggalSPPBJ = cells[48] ? (cells[48].f || cells[48].v) : ''; // AW
         
         // Hitung jumlah hari kerja secara otomatis
         let jumlahHariKerja = 0;
@@ -401,6 +437,20 @@ export default {
               hariIni: mempupukLobangHariIni,
               sdHariIni: mempupukLobangSdHariIni,
               persentase: mempupukLobangPersentase
+            },
+            // Data baru untuk Pembuatan Jalan
+            pembuatanJalan: {
+              rencana: pembuatanJalanRencana,
+              hariIni: pembuatanJalanHariIni,
+              sdHariIni: pembuatanJalanSdHariIni,
+              persentase: pembuatanJalanPersentase
+            },
+            // Data baru untuk Pembuatan Teras
+            pembuatanTeras: {
+              rencana: pembuatanTerasRencana,
+              hariIni: pembuatanTerasHariIni,
+              sdHariIni: pembuatanTerasSdHariIni,
+              persentase: pembuatanTerasPersentase
             },
             menanamKS: {
               rencana: ksRencana,
@@ -460,6 +510,11 @@ export default {
             row.lubangTanam.sdHariIni.toString(),
             row.mempupukLobang.rencana.toString(),
             row.mempupukLobang.sdHariIni.toString(),
+            // Tambahkan data baru untuk searchable
+            row.pembuatanJalan.rencana.toString(),
+            row.pembuatanJalan.sdHariIni.toString(),
+            row.pembuatanTeras.rencana.toString(),
+            row.pembuatanTeras.sdHariIni.toString(),
             row.menanamKS.rencana.toString(),
             row.menanamKS.sdHariIni.toString(),
             row.totalLC.rencana.toString(),
