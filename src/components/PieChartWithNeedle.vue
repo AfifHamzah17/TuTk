@@ -10,7 +10,7 @@
             <div class="chart-info">
               <div class="chart-label">{{ item.label }}</div>
               <div class="chart-value">{{ item.value }}%</div>
-              <div class="chart-degree">{{ getDegree(item.value) }}°</div>
+              <!-- <div class="chart-degree">{{ getDegree(item.value) }}°</div> -->
             </div>
           </div>
         </div>
