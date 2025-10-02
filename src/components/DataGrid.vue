@@ -23,16 +23,16 @@
             <th class="w-32">Kebun</th>
             <th class="w-32">Nama Paket</th>
             <th class="w-24">AFD</th>
-            <th class="w-32">Luas Paket (ha)</th>
+            <th class="w-24">Luas Paket</th>
+            <th class="w-64">Pembuatan Parit</th>
+            <th class="w-64">Pembuatan Jalan</th> <!-- Kolom baru -->
+            <th class="w-64">Pembuatan Teras</th> <!-- Kolom baru -->
             <th class="w-64">Ripper</th>
             <th class="w-64">Luku</th>
             <th class="w-64">Tumbang/Chipping</th>
-            <th class="w-64">Pembuatan Parit</th>
             <th class="w-64">Menanam Mucuna</th>
             <th class="w-64">Lubang Tanam</th>
             <th class="w-64">Mempupuk Lobang</th>
-            <th class="w-64">Pembuatan Jalan</th> <!-- Kolom baru -->
-            <th class="w-64">Pembuatan Teras</th> <!-- Kolom baru -->
             <th class="w-64">Menanam KS</th>
             <th class="w-64">Progress TU</th>
             <th class="w-40">Tanggal SPPBJ</th>
@@ -62,7 +62,39 @@
               <td class="data-grid-cell">
                 <span class="badge badge-info">{{ row.afd }}</span>
               </td>
-              <td class="data-grid-cell">{{ formatNumber(row.luasPaket) }}</td>
+              <td class="data-grid-cell">{{ formatNumber(row.luasPaket) }} ha</td>
+              <td class="data-grid-cell">
+                <ProgressItem
+                  title="Pembuatan Parit"
+                  unit="Mtr"
+                  :rencana="row.pembuatanParit.rencana"
+                  :hari-ini="row.pembuatanParit.hariIni"
+                  :sd-hari-ini="row.pembuatanParit.sdHariIni"
+                  :persentase="row.pembuatanParit.persentase"
+                />
+              </td>
+              <!-- Kolom baru: Pembuatan Jalan -->
+              <td class="data-grid-cell">
+                <ProgressItem
+                  title="Pembuatan Jalan"
+                  unit="Mtr"
+                  :rencana="row.pembuatanJalan.rencana"
+                  :hari-ini="row.pembuatanJalan.hariIni"
+                  :sd-hari-ini="row.pembuatanJalan.sdHariIni"
+                  :persentase="row.pembuatanJalan.persentase"
+                />
+              </td>
+              <!-- Kolom baru: Pembuatan Teras -->
+              <td class="data-grid-cell">
+                <ProgressItem
+                  title="Pembuatan Teras"
+                  unit="Mtr"
+                  :rencana="row.pembuatanTeras.rencana"
+                  :hari-ini="row.pembuatanTeras.hariIni"
+                  :sd-hari-ini="row.pembuatanTeras.sdHariIni"
+                  :persentase="row.pembuatanTeras.persentase"
+                />
+              </td>
               <td class="data-grid-cell">
                 <ProgressItem
                   title="Ripper"
@@ -92,16 +124,6 @@
               </td>
               <td class="data-grid-cell">
                 <ProgressItem
-                  title="Pembuatan Parit"
-                  unit="Mtr"
-                  :rencana="row.pembuatanParit.rencana"
-                  :hari-ini="row.pembuatanParit.hariIni"
-                  :sd-hari-ini="row.pembuatanParit.sdHariIni"
-                  :persentase="row.pembuatanParit.persentase"
-                />
-              </td>
-              <td class="data-grid-cell">
-                <ProgressItem
                   title="Menanam Mucuna"
                   :rencana="row.menanamMucuna.rencana"
                   :hari-ini="row.menanamMucuna.hariIni"
@@ -125,28 +147,6 @@
                   :hari-ini="row.mempupukLobang.hariIni"
                   :sd-hari-ini="row.mempupukLobang.sdHariIni"
                   :persentase="row.mempupukLobang.persentase"
-                />
-              </td>
-              <!-- Kolom baru: Pembuatan Jalan -->
-              <td class="data-grid-cell">
-                <ProgressItem
-                  title="Pembuatan Jalan"
-                  unit="Mtr"
-                  :rencana="row.pembuatanJalan.rencana"
-                  :hari-ini="row.pembuatanJalan.hariIni"
-                  :sd-hari-ini="row.pembuatanJalan.sdHariIni"
-                  :persentase="row.pembuatanJalan.persentase"
-                />
-              </td>
-              <!-- Kolom baru: Pembuatan Teras -->
-              <td class="data-grid-cell">
-                <ProgressItem
-                  title="Pembuatan Teras"
-                  unit="Mtr"
-                  :rencana="row.pembuatanTeras.rencana"
-                  :hari-ini="row.pembuatanTeras.hariIni"
-                  :sd-hari-ini="row.pembuatanTeras.sdHariIni"
-                  :persentase="row.pembuatanTeras.persentase"
                 />
               </td>
               <td class="data-grid-cell">

@@ -1,271 +1,509 @@
-# Dashboard Monitoring Tanaman
 
-Dashboard monitoring untuk melacak progress tanaman ulang dan tanaman konversi di perkebunan kelapa sawit. Dashboard ini menampilkan data real-time dari Google Spreadsheet dengan visualisasi yang interaktif dan informatif.
 
-## Fitur
-- **Monitoring Real-time**: Data diperbarui langsung dari Google Spreadsheet
-- **Statistik Overview**: Menampilkan total luas paket, total LC rencana & realisasi, dan progress rata-rata
-- **Filter Data**: Filter berdasarkan kebun, AFD, dan pencarian teks
-- **Visualisasi Data**:
-  - **Bar Chart**: Progress per kebun
-  - **Line Chart**: Trend progress
-  - **Pie Chart**: Distribusi progress dengan detail saat hover
-  - **Radar Chart**: Performa per aktivitas
-  - **Tabel Data Interaktif**: Menampilkan detail data dengan kemampuan scroll horizontal
-- **Responsif Design**: Tampilan yang optimal di berbagai ukuran layar
-- **Update Otomatis**: Menampilkan tanggal dan waktu real-time
+# Dashboard Monitoring Tanaman Kelapa Sawit
 
-## Teknologi yang Digunakan
-- **Framework**: Vue.js 3 dengan Composition API
-- **Build Tool**: Vite
-- **Styling**: Tailwind CSS
-- **Charts**: Chart.js dengan vue-chartjs
-- **HTTP Client**: Axios
-- **Date Processing**: Date-fns
-- **Icons**: Heroicons
+Dashboard monitoring komprehensif untuk melacak progress tanaman ulang dan tanaman konversi di perkebunan kelapa sawit. Dashboard ini menampilkan data real-time dari Google Spreadsheet dengan visualisasi yang interaktif dan informatif.
 
-## Struktur Folder
-```bash
+## 🌟 Fitur Utama
+
+### 📊 Monitoring Real-time
+- Data diperbarui langsung dari Google Spreadsheet
+- Update otomatis setiap detik dengan timestamp real-time
+- Indikator perubahan progress harian
+
+### 📈 Statistik Overview
+- **Total Luas Paket**: Menampilkan total area dalam hektar (ha)
+- **Total LC Rencana & Realisasi**: Monitoring target vs aktual
+- **Progress Rata-rata**: Persentase keseluruhan dengan indikator perubahan
+
+### 🔍 Sistem Filtering Canggih
+- **Filter Kebun**: Pilih kebun spesifik untuk analisis mendalam
+- **Filter Vendor**: Filter berdasarkan vendor/paket
+- **Filter Kombinasi**: Gabungkan multiple filter untuk analisis presisi
+- **Pencarian Teks**: Cari data spesifik dengan keyword
+
+### 📊 Visualisasi Data Interaktif
+
+#### 📊 Bar Chart - Progress per Kebun
+- Menampilkan rata-rata progress untuk setiap kebun
+- Tooltip interaktif dengan detail luas paket dan persentase
+- Responsive design yang menyesuaikan ukuran layar
+
+#### 🥧 Pie Chart dengan Needle (Gauge Chart)
+- Menampilkan distribusi progress dengan visualisasi jarum penunjuk
+- Indikator visual yang intuitif untuk pencapaian target
+
+#### 🥧 Pie Chart - Distribusi Progress
+- Kategori progress: 0-25%, 26-50%, 51-75%, 76-100%
+- Tooltip detail dengan daftar kebun per kategori
+- Visualisasi proporsional yang mudah dipahami
+
+#### 🕸️ Radar Chart - Performa per Aktivitas
+Monitoring detail untuk setiap aktivitas:
+- Ripper (ha)
+- Luku (ha)
+- Tumbang/Chipping (ha)
+- Menanam Mucuna (ha)
+- Lubang Tanam (ha)
+- Mempupuk Lubang (ha)
+- Menanam KS (ha)
+
+### 📋 Tabel Data Interaktif
+- **Scroll Horizontal**: Untuk melihat semua kolom data
+- **Progress Bar**: Visualisasi persentase dalam bar
+- **Format Angka Indonesia**: Sesuai standar lokal
+- **Fitur Pencarian**: Cari data spesifik dalam tabel
+- **Fitur Ekspor**: Download data untuk analisis offline
+
+## 🛠️ Teknologi yang Digunakan
+
+| Teknologi | Versi | Kegunaan |
+|-----------|-------|----------|
+| **Vue.js** | 3.5.18 | Framework JavaScript dengan Composition API |
+| **Vite** | 7.1.2 | Build tool yang cepat dan modern |
+| **Tailwind CSS** | 3.4.17 | Utility-first CSS framework |
+| **Chart.js** | 4.5.0 | Library untuk visualisasi data |
+| **vue-chartjs** | 5.3.2 | Wrapper Chart.js untuk Vue |
+| **Axios** | 1.12.2 | HTTP client untuk API requests |
+| **Date-fns** | 4.1.0 | Library untuk manipulasi tanggal |
+| **XLSX** | 0.18.5 | Library untuk export Excel |
+
+## 📁 Struktur Folder
+
+```
 src/
-├── assets/          # Aset statis
-│   └── vue.svg
-├── components/      # Komponen Vue
-│   ├── BarChart.vue          # Komponen untuk grafik batang
-│   ├── Card.vue              # Komponen kartu umum
-│   ├── DataGrid.vue         # Tabel data utama
-│   ├── KebunDetail.vue      # Detail per kebun
-│   ├── KebunTable.vue       # Tabel ringkasan kebun
-│   ├── LCChart.vue          # Grafik Total LC
-│   ├── LineChart.vue        # Grafik garis
-│   ├── PieChart.vue        # Grafik pie
-│   ├── ProgressBar.vue     # Bar progress
-│   ├── ProgressCard.vue    # Kartu progress
-│   ├── ProgressChart.vue   # Grafik progress
-│   ├── RadarChart.vue      # Grafik radar
-│   ├── RawDataTable.vue    # Tabel data mentah
-│   ├── StatCard.vue        # Kartu statistik
-│   ├── SummaryCard.vue     # Kartu ringkasan
-│   └── SummaryTable.vue    # Tabel ringkasan
-├── data/            # File data statis
-│   └── dashboardData.js
-├── services/        # Layanan API
-│   └── sheetsService.js    # Layanan untuk Google Sheets
-├── utils/           # Fungsi utilitas
-│   ├── dataProcessor.js     # Pemrosesan data
-│   └── dateUtils.js        # Utilitas tanggal
-├── App.vue         # Komponen utama
-├── main.js         # Entry point
-├── style.css       # CSS global
-└── output.css      # CSS yang dihasilkan
+├── assets/                  # Aset statis
+│       vue.svg             # Logo Vue
+├── components/              # Komponen Vue
+│       BarChart.vue        # Grafik batang progress kebun
+│       DataGrid.vue        # Tabel data utama dengan scroll
+│       LineChart.vue       # Grafik garis trend
+│       PieChart.vue        # Grafik pie distribusi
+│       PieChartWithNeedle.vue # Grafik gauge dengan jarum
+│       ProgressItem.vue    # Komponen item progress
+│       RadarChart.vue      # Grafik radar performa aktivitas
+│       RawDataTable.vue    # Tabel data mentah
+│       StatCard.vue        # Kartu statistik dengan animasi
+├── data/                   # File data statis
+│       dashboardData.js    # Data sample untuk development
+│       rantai.json         # Data mapping kodering
+├── services/               # Layanan API
+│       sheetsService.js    # Integrasi Google Sheets API
+├── utils/                  # Fungsi utilitas
+│       dataProcessor.js    # Pemrosesan dan transformasi data
+│       dateUtils.js        # Utilitas manipulasi tanggal
+│       exportUtils.js      # Utilitas ekspor data
+├── App.vue                 # Komponen utama aplikasi
+├── main.js                 # Entry point aplikasi
+├── style.css               # CSS global dan custom
+└── output.css              # CSS yang di-generate Tailwind
 ```
 
-## Instalasi
+## 🚀 Instalasi & Setup
 
 ### Prasyarat
 - **Node.js** (v14.0.0 atau lebih tinggi)
 - **npm** atau **yarn**
+- **Git**
 
-### Langkah-langkah
-1. **Clone repositori**
+### Langkah Instalasi
+
+1. **Clone Repositori**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/AfifHamzah17/TuTk.git
    cd dashboard-monitoring
-    ```
-2. **Install dependensi**
-  ```bash
-    npm install
-  ```
+   ```
 
-3. **Jalankan aplikasi**
-```bash
-npm run dev
+2. **Install Dependensi**
+   ```bash
+   npm install
+   # atau
+   yarn install
+   ```
+
+3. **Konfigurasi Environment**
+   ```bash
+   # Buat file .env
+   cp .env.example .env
+   # Edit file .env dengan konfigurasi Google Sheets API
+   ```
+
+4. **Jalankan Aplikasi**
+   ```bash
+   npm run dev
+   # atau
+   yarn dev
+   ```
+
+5. **Build untuk Production**
+   ```bash
+   npm run build
+   # atau
+   yarn build
+   ```
+
+6. **Preview Production Build**
+   ```bash
+   npm run preview
+   # atau
+   yarn preview
+   ```
+
+## 📖 Panduan Penggunaan
+
+### 1. Memahami Dashboard Layout
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    HEADER SECTION                           │
+│  Judul Dashboard | Deskripsi | Tanggal & Waktu Real-time    │
+├─────────────────────────────────────────────────────────────┤
+│                  STATISTICS CARDS                           │
+│  [Luas Paket] [Progress Tanam Ulang] [Filter Toggle]       │
+├─────────────────────────────────────────────────────────────┤
+│                    FILTER SECTION                           │
+│  [Kebun ▼] [Vendor ▼] [Search] [Apply] [Reset]            │
+├─────────────────────────────────────────────────────────────┤
+│                     CHARTS SECTION                         │
+│  [Bar Chart] [Pie Chart with Needle]                       │
+│  [Pie Chart] [Radar Chart]                                 │
+├─────────────────────────────────────────────────────────────┤
+│                    DATA TABLE SECTION                       │
+│  [Search] [Export] [Refresh]                               │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │              Scrollable Data Table                  │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-4. **Buka browser dan akses http://localhost:5173**
-
-## Penggunaan
-
-### 1. Memahami Dashboard
-Dashboard terdiri dari beberapa bagian utama:
-
-- **Header**: Menampilkan judul dashboard, deskripsi, serta tanggal dan waktu real-time.
-- **Statistik Cards**: Menampilkan metrik utama seperti total luas paket, total LC rencana dan realisasi, serta progress rata-rata.
-- **Filter**: Memfilter data berdasarkan kebun, AFD, atau kata kunci.
-- **Charts**: Visualisasi data dalam berbagai bentuk grafik.
-- **Data Grid**: Tabel detail yang dapat di-scroll horizontal.
-
 ### 2. Menggunakan Filter
-- **Filter Kebun**: Pilih kebun spesifik untuk melihat data hanya dari kebun tersebut.
-- **Filter AFD**: Pilih AFD spesifik untuk mempersempit data.
-- **Pencarian**: Gunakan kotak pencarian untuk mencari data spesifik.
-- Klik tombol **"Terapkan Filter"** untuk menerapkan filter.
 
-### 3. Memahami Visualisasi Data
-- **Bar Chart** - Progress per Kebun: Menampilkan rata-rata progress untuk setiap kebun. Setiap batang mewakili satu kebun dengan tinggi batang menunjukkan persentase progress.
-- **Line Chart** - Trend Progress: Menampilkan tren progress selama 7 hari terakhir untuk 3 kebun teratas. Grafik ini membantu mengidentifikasi apakah progress meningkat atau menurun dari waktu ke waktu.
-- **Pie Chart** - Distribusi Progress: Menampilkan distribusi progress dalam kategori:
-  - 0-25%
-  - 26-50%
-  - 51-75%
-  - 76-100%
-  Saat hover pada setiap bagian pie chart, akan muncul informasi detail tentang:
-  - Persentase kategori
-  - Jumlah entri dalam kategori tersebut
-  - Daftar kebun dan AFD yang termasuk dalam kategori tersebut
-- **Radar Chart** - Performa per Aktivitas: Menampilkan performa rata-rata untuk setiap aktivitas seperti:
-  - Ripper
-  - Luku
-  - Tumbang/Chipping
-  - Pembuatan Parit
-  - Menanam Mucuna
-  - Lubang Tanam
-  - Menanam KS
-  Radar chart ini membantu mengidentifikasi aktivitas mana yang perlu diperhatikan karena progressnya rendah.
+#### Filter Kebun
+- Klik dropdown "Filter Kebun"
+- Pilih satu atau多个 kebun
+- Statistik dan chart akan update otomatis
 
-### 4. Membaca Data Grid
-Tabel menampilkan detail data dengan kolom-kolom berikut:
-- **No**: Nomor urut
-- **Kebun**: Nama kebun
-- **AFD**: Nama AFD
-- **Luas Paket (ha)**: Luas area paket
-- **Rencana dan Realisasi**: Untuk setiap aktivitas
-- **Total LC**: Total LC dengan rencana dan realisasi
-- **Tanggal SPPBJ**: Tanggal terbit SPPBJ
-- **Hari Kerja**: Jumlah hari kerja (dihitung otomatis dari tanggal SPPBJ hingga hari ini)
+#### Filter Vendor
+- Klik dropdown "Filter Vendor"
+- Pilih vendor untuk melihat progress per paket
+- Cocok untuk monitoring vendor management
 
-## Komponen Utama
+#### Filter Kombinasi
+- Gunakan filter kebun dan vendor bersamaan
+- Hasil akan menampilkan data yang sesuai dengan kedua filter
 
-### 1. **App.vue**
-Komponen utama yang mengatur seluruh aplikasi. Bertanggung jawab untuk:
-- Mengambil data dari Google Sheets
-- Memproses data untuk statistik
-- Mengelola state aplikasi
-- Menyusun layout dashboard
+### 3. Membaca Visualisasi Data
 
-### 2. **DataGrid.vue**
-Komponen untuk menampilkan data dalam bentuk tabel dengan fitur:
-- **Scroll horizontal** untuk melihat semua kolom
-- **Sub-grid** untuk setiap aktivitas
-- **Progress bar** untuk visualisasi persentase
-- **Format angka** sesuai standar Indonesia
+#### Bar Chart Interpretation
+- **Height**: Persentase progress
+- **Color**: Indikator status (hijau=baik, kuning=warning, merah=critical)
+- **Hover**: Detail tooltip dengan informasi lengkap
 
-### 3. **Komponen Chart**
-- **BarChart.vue**: Grafik batang untuk menampilkan progress per kebun.
-- **LineChart.vue**: Grafik garis untuk menampilkan tren progress.
-- **PieChart.vue**: Grafik pie untuk menampilkan distribusi progress.
-- **RadarChart.vue**: Grafik radar untuk menampilkan performa per aktivitas.
+#### Pie Chart dengan Needle
+- **Jarum**: Menunjukkan rata-rata progress keseluruhan
+- **Segmen**: Distribusi progress per kategori
+- **Hover**: Detail persentase untuk setiap segmen
 
-### 4. **StatCard.vue**
-Komponen untuk menampilkan kartu statistik dengan ikon dan nilai.
+#### Pie Chart Breakdown
+- **Segments**: Kategori progress
+- **Size**: Proporsi data per kategori
+- **Hover**: Detail item dalam kategori
 
-### 5. **sheetsService.js**
-Layanan untuk mengambil data dari Google Spreadsheet API.
+#### Radar Chart Performance
+- **Axes**: 7 aktivitas utama (tanpa Pembuatan Parit)
+- **Shape**: Pola performa keseluruhan
+- **Area**: Luas area menunjukkan performa kumulatif
+- **Spikes**: Identifikasi aktivitas yang perlu perhatian
 
-### 6. **dateUtils.js**
-Utilitas untuk memproses tanggal:
-- `calculateDaysDifference()`: Menghitung selisih hari antara dua tanggal.
-- `formatDate()`: Memformat tanggal menjadi format yang lebih mudah dibaca.
-- `isValidDateFormat()`: Validasi format tanggal.
+### 4. Navigasi Tabel Data
 
-## Customisasi
-
-### Menambahkan Kebun atau AFD Baru
-Data diambil langsung dari Google Spreadsheet. Untuk menambahkan kebun atau AFD baru:
-1. Tambahkan data baru di Google Spreadsheet.
-2. Refresh dashboard dengan menekan tombol **"Refresh Data"**.
-3. Data baru akan otomatis muncul di dashboard.
-
-### Mengubah Warna Tema
-Untuk mengubah warna tema, edit file `src/assets/style.css` dengan mengubah nilai variabel CSS:
-
-```css
-:root {
-  --primary: #10b981;
-  --primary-dark: #059669;
-  --secondary: #3b82f6;
-  --accent: #8b5cf6;
-  --light: #f3f4f6;
-  --dark: #1f2937;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #ef4444;
+#### Horizontal Scroll
+```javascript
+// Scroll untuk melihat semua kolom
+.data-grid {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 ```
 
-## Menambahkan Chart Baru
+#### Export Data
+- Klik tombol "Export to Excel"
+- Data akan di-download dalam format .xlsx
+- Include semua filter yang aktif
 
-Untuk menambahkan tipe chart baru:
+## 🎨 Customization
 
-1. **Buat Komponen Chart Baru**
-   - Buat komponen chart baru di folder `src/components/`.
+### Menambahkan Kebun Baru
 
-2. **Import Komponen di App.vue**
-   - Setelah komponen chart baru dibuat, import komponen tersebut ke dalam file `App.vue`.
+1. **Di Google Spreadsheet**
+   - Tambahkan baris data baru
+   - Pastikan format konsisten
+   - Include semua kolom required
 
-3. **Tambahkan Komponen ke Charts Section di App.vue**
-   - Tambahkan komponen chart baru di bagian **Charts Section** pada `App.vue` untuk menampilkan grafik tersebut.
+2. **Di Mapping Kodering** (`src/data/rantai.json`)
+   ```json
+   {
+     "Kebun": "NAMA_KEBUN_BARU",
+     "Kodering": "KODE_BARU"
+   }
+   ```
 
-4. **Siapkan Data untuk Chart Baru**
-   - Siapkan data yang diperlukan untuk chart baru di bagian `computed` property pada `App.vue` agar grafik dapat menerima dan memproses data dengan benar.
+3. **Refresh Dashboard**
+   - Data baru akan otomatis muncul
+   - Filter akan update dengan kebun baru
+
+### Mengubah Warna Tema
+
+Edit `src/assets/style.css`:
+
+```css
+:root {
+  --primary: #10b981;        /* Warna utama */
+  --primary-dark: #059669;   /* Warna utama gelap */
+  --secondary: #3b82f6;      /* Warna sekunder */
+  --accent: #8b5cf6;         /* Warna aksen */
+  --success: #10b981;        /* Warna sukses */
+  --warning: #f59e0b;        /* Warna peringatan */
+  --danger: #ef4444;         /* Warna bahaya */
+  --light: #f3f4f6;          /* Warna background */
+  --dark: #1f2937;           /* Warna teks gelap */
+}
+```
+
+### Menambah Chart Baru
+
+1. **Buat Komponen Chart**
+   ```vue
+   <!-- src/components/NewChart.vue -->
+   <template>
+     <div class="chart-container">
+       <canvas ref="chartCanvas"></canvas>
+     </div>
+   </template>
+   
+   <script>
+   import { Chart, registerables } from 'chart.js';
+   
+   export default {
+     name: 'NewChart',
+     props: ['data'],
+     mounted() {
+       Chart.register(...registerables);
+       // Chart initialization logic
+     }
+   }
+   </script>
+   ```
+
+2. **Import di App.vue**
+   ```javascript
+   import NewChart from './components/NewChart.vue';
+   ```
+
+3. **Tambahkan ke Template**
+   ```vue
+   <template>
+     <div class="charts-section">
+       <NewChart :data="chartData" />
+     </div>
+   </template>
+   ```
+
+4. **Prepare Data**
+   ```javascript
+   computed: {
+     chartData() {
+       // Data preparation logic
+       return processedData;
+     }
+   }
+   ```
+
+### Konfigurasi Google Sheets API
+
+1. **Enable Google Sheets API**
+   - Go to Google Cloud Console
+   - Enable Sheets API
+   - Create credentials
+
+2. **Share Spreadsheet**
+   - Share dengan service account email
+   - Set permission ke "Viewer"
+
+3. **Update Service Configuration**
+   ```javascript
+   // src/services/sheetsService.js
+   const API_KEY = 'YOUR_API_KEY';
+   const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID';
+   ```
+
+## 🔧 Troubleshooting
+
+### Data Tidak Muncul
+
+| Symptom | Possible Cause | Solution |
+|---------|----------------|----------|
+| Loading spinner terus berputar | Koneksi internet tidak stabil | Check koneksi dan refresh |
+| Error 403 di console | API key invalid atau expired | Regenerate API key |
+| Empty table | Spreadsheet tidak accessible | Check sharing permissions |
+
+### Format Tanggal Tidak Sesuai
+
+```javascript
+// Expected format: MM/DD/YYYY
+// Check src/utils/dateUtils.js
+function isValidDateFormat(dateString) {
+  const regex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
+  return regex.test(dateString);
+}
+```
+
+### Chart Tidak Render
+
+1. **Check Data Availability**
+   ```javascript
+   // Ensure data exists before rendering
+   if (!chartData || chartData.length === 0) {
+     console.error('No data available for chart');
+     return;
+   }
+   ```
+
+2. **Check Chart.js Registration**
+   ```javascript
+   import { Chart, registerables } from 'chart.js';
+   Chart.register(...registerables);
+   ```
+
+3. **Check Canvas Element**
+   ```javascript
+   // Ensure canvas is mounted
+   this.$nextTick(() => {
+     const ctx = this.$refs.chartCanvas.getContext('2d');
+     // Initialize chart
+   });
+   ```
+
+### Performance Issues
+
+1. **Implement Virtual Scrolling**
+   ```vue
+   <template>
+     <RecycleScroller
+       class="scroller"
+       :items="items"
+       :item-size="50"
+       key-field="id"
+       v-slot="{ item }"
+     >
+       <!-- Row content -->
+     </RecycleScroller>
+   </template>
+   ```
+
+2. **Debounce Search**
+   ```javascript
+   import { debounce } from 'lodash';
+   
+   methods: {
+     search: debounce(function(query) {
+       // Search logic
+     }, 300)
+   }
+   ```
+
+## 🤝 Kontribusi
+
+Kami welcome kontribusi dari komunitas! Berikut cara berkontribusi:
+
+### Development Workflow
+
+1. **Fork Repository**
+   ```bash
+   # Fork di GitHub, then clone
+   git clone https://github.com/USERNAME/TuTk.git
+   cd TuTk
+   ```
+
+2. **Setup Development Environment**
+   ```bash
+   npm install
+   npm run dev
+   ```
+
+3. **Create Feature Branch**
+   ```bash
+   git checkout -b feature/nama-fitur-baru
+   ```
+
+4. **Make Changes**
+   - Follow coding standards
+   - Add tests if applicable
+   - Update documentation
+
+5. **Commit Changes**
+   ```bash
+   git commit -m "feat: tambah fitur baru untuk monitoring vendor"
+   ```
+
+6. **Push and Create PR**
+   ```bash
+   git push origin feature/nama-fitur-baru
+   # Create Pull Request di GitHub
+   ```
+
+### Code Style Guidelines
+
+- Use Vue 3 Composition API
+- Follow ESLint configuration
+- Write meaningful commit messages
+- Add comments for complex logic
+- Update README for new features
+
+### Issue Reporting
+
+When reporting bugs, please include:
+- Environment details (OS, browser)
+- Steps to reproduce
+- Expected vs actual behavior
+- Screenshots if applicable
+- Console errors
+
+## 📄 Lisensi
+
+Proyek ini dilisensikan under [MIT License](LICENSE).
+
+```
+MIT License
+
+Copyright (c) 2025 Afif Hamzah
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+```
+
+## 📞 Kontak
+
+- **Developer**: Afif Hamzah
+- **Email**: afifhamzah017@gmail.com
+- **GitHub**: [@afifhamzah17](https://github.com/afifhamzah17)
+- **LinkedIn**: [@afifhamzah17](https://www.linkedin.com/in/afifhamzah17)
+- **Project**: https://github.com/AfifHamzah17/TuTk.git 
+
+## 🙏 Acknowledgments
+
+- [Vue.js](https://vuejs.org/) - The progressive JavaScript framework
+- [Chart.js](https://www.chartjs.org/) - Simple yet flexible JavaScript charting
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
+- [Google Sheets API](https://developers.google.com/sheets/api) - Data source integration
 
 ---
 
-## Troubleshooting
-
-### 1. **Data Tidak Muncul**
-
-Jika data tidak muncul di dashboard, coba langkah-langkah berikut:
-
-- **Periksa Koneksi Internet**: Pastikan koneksi internet Anda stabil.
-- **Pastikan Google Spreadsheet Dapat Diakses**: Pastikan Anda memiliki izin akses ke Google Spreadsheet yang digunakan.
-- **Periksa Console Browser untuk Error**: Buka developer tools di browser (F12) dan periksa console untuk error yang mungkin terjadi.
-- **Periksa Format Data di Spreadsheet**: Pastikan data yang ada di Google Spreadsheet sesuai dengan format yang diharapkan.
-
-### 2. **Format Tanggal Tidak Sesuai**
-
-Jika format tanggal tidak sesuai, lakukan hal berikut:
-
-- **Pastikan Format Tanggal di Spreadsheet adalah MM/DD/YYYY**: Periksa dan pastikan format tanggal yang ada di spreadsheet sesuai dengan format **MM/DD/YYYY**.
-- **Periksa Fungsi `calculateDaysDifference` di `src/utils/dateUtils.js`**: Pastikan fungsi ini berfungsi dengan benar untuk menghitung selisih tanggal.
-- **Refresh Browser**: Setelah perbaikan, coba refresh halaman browser untuk memastikan perubahan diterapkan.
-
-### 3. **Chart Tidak Muncul**
-
-Jika chart tidak muncul di dashboard, coba langkah-langkah berikut:
-
-- **Periksa Apakah Data Tersedia untuk Chart**: Pastikan data yang dibutuhkan untuk chart sudah tersedia dan terhubung dengan benar.
-- **Periksa Console Browser untuk Error Terkait Chart.js**: Periksa console di browser untuk melihat apakah ada error terkait dengan penggunaan Chart.js.
-- **Pastikan Semua Dependensi Sudah Terinstall dengan Benar**: Jalankan `npm install` untuk memastikan bahwa semua dependensi telah terpasang dengan benar.
-
----
-
-## Kontribusi
-
-Untuk berkontribusi pada proyek ini, ikuti langkah-langkah berikut:
-
-1. **Fork Repositori**: Klik tombol "Fork" di halaman repositori untuk membuat salinan pribadi dari repositori ini.
-2. **Buat Branch Fitur Baru**: Gunakan perintah berikut untuk membuat branch baru:
-```bash
-   git checkout -b feature/AmazingFeature
-```
-3. **Commit Perubahan**: Setelah melakukan perubahan, commit dengan pesan yang sesuai:
-```bash
-git commit -m 'Add some AmazingFeature'
-```
-
-4. **Push ke Branch**: Push perubahan ke branch baru Anda:
-```bash
-git push origin feature/AmazingFeature
-```
-
-5. **Buka Pull Request**: Buka pull request untuk menggabungkan perubahan Anda ke branch utama.
-
-## Lisensi
-
-Proyek ini didistribusikan di bawah [MIT License](https://opensource.org/licenses/MIT). Lihat [LICENSE](LICENSE) untuk informasi lebih lanjut.
-
-## Kontak
-
-Nama Pembuat - [@afifhamzah17] - afifhamzah017@gmail.com
-
-Project Link: https://github.com/AfifHamzah17/TuTk
+**Made with ❤️ for Palm Oil Industry**

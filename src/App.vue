@@ -1,4 +1,3 @@
-<!-- src/App.vue -->
 <template>
   <div class="min-h-screen bg-gray-100 p-4 md:p-8">
     <header class="dashboard-header">
@@ -287,7 +286,7 @@ export default {
           { "Kebun": "KEBUN PANGLEJAR", "Kodering": "1KPA" },
           { "Kebun": "KEBUN KERTAJAYA", "Kodering": "1KKE" },
           { "Kebun": "KEBUN CIBUNGUNG", "Kodering": "1KTB" },
-          { "Kebun": "KEBUK CIKASUNGKA", "Kodering": "1KCI" },
+          { "Kebun": "KEBUN CIKASUNGKA", "Kodering": "1KCI" },
           { "Kebun": "KEBUN SUKA MAJU", "Kodering": "1KKA" }
         ];
         
@@ -782,356 +781,481 @@ export default {
       }
     };
     
-    // Data untuk Bar Chart
-    const barChartData = computed(() => {
-      if (!rawData.value || !rawData.value.table || !rawData.value.table.rows) {
-        return {
-          labels: [],
-          datasets: [{
-            label: 'Progress Rata-rata (%)',
-            data: [],
-            backgroundColor: 'rgba(16, 185, 129, 0.5)',
-            borderColor: 'rgba(16, 185, 129, 1)',
-            borderWidth: 1
-          }],
-          options: {
-            scales: {
-              y: yAxisConfig
-            },
-            plugins: {
-              tooltip: {
-                callbacks: {
-                  afterLabel: function(context) {
-                    return `Realisasi: ${context.raw.realizedArea || 0} ha`;
-                  }
-                }
+// Data untuk Bar Chart
+const barChartData = computed(() => {
+  if (!rawData.value || !rawData.value.table || !rawData.value.table.rows) {
+    return {
+      labels: [],
+      datasets: [{
+        label: 'Progress Rata-rata (%)',
+        data: [],
+        backgroundColor: 'rgba(16, 185, 129, 0.5)',
+        borderColor: 'rgba(16, 185, 129, 1)',
+        borderWidth: 1
+      }],
+      options: {
+        scales: {
+          y: yAxisConfig
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              afterLabel: function(context) {
+                return `Luas Paket: ${context.raw.luasPaket || 0} ha`;
               }
-            }
-          }
-        };
-      }
-      
-      const rows = rawData.value.table.rows;
-      
-      // Jika filter kebun dan vendor aktif, tampilkan per afdeling
-      if (filterKebun.value && filterPaket.value) {
-        const dataPoints = [];
-        let currentKebun = null;
-        
-        // Proses data untuk mendapatkan progress per afdeling
-        for (let i = 0; i < rows.length; i++) {
-          const row = rows[i];
-          const cells = row.c;
-          
-          if (!cells || cells.length === 0) continue;
-          
-          // Skip baris header, jumlah, total
-          if (cells[1] && (cells[1].v === 'Kebun' || cells[0] && (cells[0].v === 'Jumlah' || cells[0].v === 'Total'))) continue;
-          
-          const kebunName = cells[1] ? cells[1].v : '';
-          const afdName = cells[3] ? cells[3].v : '';
-          const paketName = cells[2] ? cells[2].v : '';
-          
-          // Skip baris yang tidak memiliki kebun dan AFD
-          if (!kebunName && !afdName) continue;
-          
-          // Set currentKebun jika ada
-          if (kebunName) {
-            currentKebun = kebunName;
-          }
-          
-          // Skip baris yang tidak memiliki AFD (kecuali baris nama kebun)
-          if (!afdName && !kebunName) continue;
-          
-          // Hanya proses jika ada kebun dan AFD
-          if (currentKebun && afdName) {
-            // Apply filters using helper function
-            if (!shouldIncludeRow(currentKebun, afdName, paketName)) continue;
-            
-            // Hanya proses jika kebun dan paket sesuai dengan filter
-            if (currentKebun === filterKebun.value && paketName === filterPaket.value) {
-              // Hitung Progress TU dengan fungsi baru (tanpa aktivitas parit)
-              const lcPersentase = calculateProgressTU(cells);
-              const realizedArea = getRealizedArea(cells);
-              
-              // Format label: afdeling saja
-              const label = afdName;
-              
-              dataPoints.push({
-                label: label,
-                progress: lcPersentase,
-                realizedArea: realizedArea
-              });
             }
           }
         }
-        
-        return {
-          labels: dataPoints.map(dp => dp.label),
-          datasets: [{
-            label: 'Progress TU (%)',
-            data: dataPoints.map(dp => dp.progress),
-            backgroundColor: 'rgba(16, 185, 129, 0.5)',
-            borderColor: 'rgba(16, 185, 129, 1)',
-            borderWidth: 1
-          }],
-          options: {
-            scales: {
-              y: yAxisConfig
-            },
-            plugins: {
-              tooltip: {
-                callbacks: {
-                  afterLabel: function(context) {
-                    return `Realisasi: ${context.raw.realizedArea || 0} ha`;
-                  }
-                }
-              }
-            }
-          }
-        };
+      }
+    };
+  }
+  
+  const rows = rawData.value.table.rows;
+  
+  // Debug: Log structure of first data row
+  if (rows.length > 1) {
+    console.log("Struktur data baris pertama:", rows[1].c);
+  }
+  
+  // Jika filter kebun dan vendor aktif, tampilkan per afdeling
+  if (filterKebun.value && filterPaket.value) {
+    const dataPoints = [];
+    let currentKebun = null;
+    
+    // Proses data untuk mendapatkan progress per afdeling
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const cells = row.c;
+      
+      if (!cells || cells.length === 0) continue;
+      
+      // Skip baris header, jumlah, total
+      if (cells[1] && (cells[1].v === 'Kebun' || cells[0] && (cells[0].v === 'Jumlah' || cells[0].v === 'Total'))) continue;
+      
+      const kebunName = cells[1] ? cells[1].v : '';
+      const afdName = cells[3] ? cells[3].v : '';
+      const paketName = cells[2] ? cells[2].v : '';
+      
+      // Skip baris yang tidak memiliki kebun dan AFD
+      if (!kebunName && !afdName) continue;
+      
+      // Set currentKebun jika ada
+      if (kebunName) {
+        currentKebun = kebunName;
       }
       
-      // Jika filter vendor aktif, tampilkan per afdeling dengan kodering
-      if (filterPaket.value && !filterKebun.value) {
-        const dataPoints = [];
-        let currentKebun = null;
+      // Skip baris yang tidak memiliki AFD (kecuali baris nama kebun)
+      if (!afdName && !kebunName) continue;
+      
+      // Hanya proses jika ada kebun dan AFD
+      if (currentKebun && afdName) {
+        // Apply filters using helper function
+        if (!shouldIncludeRow(currentKebun, afdName, paketName)) continue;
         
-        // Proses data untuk mendapatkan progress per afdeling
-        for (let i = 0; i < rows.length; i++) {
-          const row = rows[i];
-          const cells = row.c;
+        // Hanya proses jika kebun dan paket sesuai dengan filter
+        if (currentKebun === filterKebun.value && paketName === filterPaket.value) {
+          // Hitung Progress TU dengan fungsi baru (tanpa aktivitas parit)
+          const lcPersentase = calculateProgressTU(cells);
+          const realizedArea = getRealizedArea(cells);
           
-          if (!cells || cells.length === 0) continue;
+          // Debug: Log cell values
+          console.log(`Baris ${i}: Kebun=${currentKebun}, Afd=${afdName}, Paket=${paketName}`);
+          console.log("Cells[4]:", cells[4]);
           
-          // Skip baris header, jumlah, total
-          if (cells[1] && (cells[1].v === 'Kebun' || cells[0] && (cells[0].v === 'Jumlah' || cells[0].v === 'Total'))) continue;
-          
-          const kebunName = cells[1] ? cells[1].v : '';
-          const afdName = cells[3] ? cells[3].v : '';
-          const paketName = cells[2] ? cells[2].v : '';
-          
-          // Skip baris yang tidak memiliki kebun dan AFD
-          if (!kebunName && !afdName) continue;
-          
-          // Set currentKebun jika ada
-          if (kebunName) {
-            currentKebun = kebunName;
+          // Ambil luas paket dari kolom ke-4 (indeks 4)
+          let luasPaket = 0;
+          if (cells[4]) {
+            // Coba ambil nilai dari properti v atau f
+            if (cells[4].v !== undefined && cells[4].v !== null) {
+              luasPaket = parseFloat(cells[4].v) || 0;
+            } else if (cells[4].f !== undefined && cells[4].f !== null) {
+              // Jika v tidak ada, coba f (formatted value)
+              // Hapus tanda koma dan titik untuk memastikan parsing yang benar
+              const formattedValue = cells[4].f.replace(/[,.]/g, '');
+              luasPaket = parseFloat(formattedValue) || 0;
+            }
           }
           
-          // Skip baris yang tidak memiliki AFD (kecuali baris nama kebun)
-          if (!afdName && !kebunName) continue;
+          console.log(`Luas Paket yang diambil: ${luasPaket}`);
           
-          // Hanya proses jika ada kebun dan AFD
-          if (currentKebun && afdName) {
-            // Apply filters using helper function
-            if (!shouldIncludeRow(currentKebun, afdName, paketName)) continue;
-            
-            // Hanya proses jika paket sesuai dengan filter
-            if (paketName === filterPaket.value) {
-              // Hitung Progress TU dengan fungsi baru (tanpa aktivitas parit)
-              const lcPersentase = calculateProgressTU(cells);
-              const realizedArea = getRealizedArea(cells);
-              
-              // Get kodering for the kebun
-              const kodering = getKodering(currentKebun);
-              
-              // Format label: kodering - afdeling
-              const label = `${kodering} - ${afdName}`;
-              
-              dataPoints.push({
-                label: label,
-                progress: lcPersentase,
-                realizedArea: realizedArea
-              });
+          // Format label: afdeling saja
+          const label = afdName;
+          
+          dataPoints.push({
+            label: label,
+            progress: lcPersentase,
+            realizedArea: realizedArea,
+            luasPaket: luasPaket
+          });
+        }
+      }
+    }
+    
+    console.log("Data points yang akan dikirim ke chart:", dataPoints);
+    
+    // Buat array khusus untuk luas paket
+    const luasPaketArray = dataPoints.map(dp => dp.luasPaket);
+    
+    return {
+      labels: dataPoints.map(dp => dp.label),
+      datasets: [{
+        label: 'Progress TU (%)',
+        data: dataPoints.map(dp => dp.progress),
+        backgroundColor: 'rgba(16, 185, 129, 0.5)',
+        borderColor: 'rgba(16, 185, 129, 1)',
+        borderWidth: 1,
+        // Tambahkan data luas paket sebagai properti tambahan
+        luasPaket: luasPaketArray
+      }],
+      options: {
+        scales: {
+          y: yAxisConfig
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              afterLabel: function(context) {
+                // Akses luas paket dari dataset
+                const luasPaket = context.dataset.luasPaket[context.dataIndex] || 0;
+                return `Luas Paket: ${luasPaket} ha`;
+              }
             }
           }
         }
-        
-        return {
-          labels: dataPoints.map(dp => dp.label),
-          datasets: [{
-            label: 'Progress TU (%)',
-            data: dataPoints.map(dp => dp.progress),
-            backgroundColor: 'rgba(16, 185, 129, 0.5)',
-            borderColor: 'rgba(16, 185, 129, 1)',
-            borderWidth: 1
-          }],
-          options: {
-            scales: {
-              y: yAxisConfig
-            },
-            plugins: {
-              tooltip: {
-                callbacks: {
-                  afterLabel: function(context) {
-                    return `Realisasi: ${context.raw.realizedArea || 0} ha`;
-                  }
-                }
-              }
-            }
-          }
-        };
+      }
+    };
+  }
+  
+  // Jika filter vendor aktif, tampilkan per afdeling dengan kodering
+  if (filterPaket.value && !filterKebun.value) {
+    const dataPoints = [];
+    let currentKebun = null;
+    
+    // Proses data untuk mendapatkan progress per afdeling
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const cells = row.c;
+      
+      if (!cells || cells.length === 0) continue;
+      
+      // Skip baris header, jumlah, total
+      if (cells[1] && (cells[1].v === 'Kebun' || cells[0] && (cells[0].v === 'Jumlah' || cells[0].v === 'Total'))) continue;
+      
+      const kebunName = cells[1] ? cells[1].v : '';
+      const afdName = cells[3] ? cells[3].v : '';
+      const paketName = cells[2] ? cells[2].v : '';
+      
+      // Skip baris yang tidak memiliki kebun dan AFD
+      if (!kebunName && !afdName) continue;
+      
+      // Set currentKebun jika ada
+      if (kebunName) {
+        currentKebun = kebunName;
       }
       
-      // Jika filter kebun aktif, tampilkan per afdeling dan vendor
-      if (filterKebun.value && !filterPaket.value) {
-        const dataPoints = [];
-        let currentKebun = null;
+      // Skip baris yang tidak memiliki AFD (kecuali baris nama kebun)
+      if (!afdName && !kebunName) continue;
+      
+      // Hanya proses jika ada kebun dan AFD
+      if (currentKebun && afdName) {
+        // Apply filters using helper function
+        if (!shouldIncludeRow(currentKebun, afdName, paketName)) continue;
         
-        // Proses data untuk mendapatkan progress per afdeling dan vendor
-        for (let i = 0; i < rows.length; i++) {
-          const row = rows[i];
-          const cells = row.c;
+        // Hanya proses jika paket sesuai dengan filter
+        if (paketName === filterPaket.value) {
+          // Hitung Progress TU dengan fungsi baru (tanpa aktivitas parit)
+          const lcPersentase = calculateProgressTU(cells);
+          const realizedArea = getRealizedArea(cells);
           
-          if (!cells || cells.length === 0) continue;
+          // Debug: Log cell values
+          console.log(`Baris ${i}: Kebun=${currentKebun}, Afd=${afdName}, Paket=${paketName}`);
+          console.log("Cells[4]:", cells[4]);
           
-          // Skip baris header, jumlah, total
-          if (cells[1] && (cells[1].v === 'Kebun' || cells[0] && (cells[0].v === 'Jumlah' || cells[0].v === 'Total'))) continue;
-          
-          const kebunName = cells[1] ? cells[1].v : '';
-          const afdName = cells[3] ? cells[3].v : '';
-          const paketName = cells[2] ? cells[2].v : '';
-          
-          // Skip baris yang tidak memiliki kebun dan AFD
-          if (!kebunName && !afdName) continue;
-          
-          // Set currentKebun jika ada
-          if (kebunName) {
-            currentKebun = kebunName;
+          // Ambil luas paket dari kolom ke-4 (indeks 4)
+          let luasPaket = 0;
+          if (cells[4]) {
+            // Coba ambil nilai dari properti v atau f
+            if (cells[4].v !== undefined && cells[4].v !== null) {
+              luasPaket = parseFloat(cells[4].v) || 0;
+            } else if (cells[4].f !== undefined && cells[4].f !== null) {
+              // Jika v tidak ada, coba f (formatted value)
+              // Hapus tanda koma dan titik untuk memastikan parsing yang benar
+              const formattedValue = cells[4].f.replace(/[,.]/g, '');
+              luasPaket = parseFloat(formattedValue) || 0;
+            }
           }
           
-          // Skip baris yang tidak memiliki AFD (kecuali baris nama kebun)
-          if (!afdName && !kebunName) continue;
+          console.log(`Luas Paket yang diambil: ${luasPaket}`);
           
-          // Hanya proses jika ada kebun dan AFD
-          if (currentKebun && afdName) {
-            // Apply filters using helper function
-            if (!shouldIncludeRow(currentKebun, afdName, paketName)) continue;
-            
-            // Hanya proses jika kebun sesuai dengan filter
-            if (currentKebun === filterKebun.value) {
-              // Hitung Progress TU dengan fungsi baru (tanpa aktivitas parit)
-              const lcPersentase = calculateProgressTU(cells);
-              const realizedArea = getRealizedArea(cells);
-              
-              // Format label: afdeling - vendor
-              const label = `${afdName} - ${paketName}`;
-              
-              dataPoints.push({
-                label: label,
-                progress: lcPersentase,
-                realizedArea: realizedArea
-              });
+          // Get kodering for the kebun
+          const kodering = getKodering(currentKebun);
+          
+          // Format label: kodering - afdeling
+          const label = `${kodering} - ${afdName}`;
+          
+          dataPoints.push({
+            label: label,
+            progress: lcPersentase,
+            realizedArea: realizedArea,
+            luasPaket: luasPaket
+          });
+        }
+      }
+    }
+    
+    console.log("Data points yang akan dikirim ke chart:", dataPoints);
+    
+    // Buat array khusus untuk luas paket
+    const luasPaketArray = dataPoints.map(dp => dp.luasPaket);
+    
+    return {
+      labels: dataPoints.map(dp => dp.label),
+      datasets: [{
+        label: 'Progress TU (%)',
+        data: dataPoints.map(dp => dp.progress),
+        backgroundColor: 'rgba(16, 185, 129, 0.5)',
+        borderColor: 'rgba(16, 185, 129, 1)',
+        borderWidth: 1,
+        // Tambahkan data luas paket sebagai properti tambahan
+        luasPaket: luasPaketArray
+      }],
+      options: {
+        scales: {
+          y: yAxisConfig
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              afterLabel: function(context) {
+                // Akses luas paket dari dataset
+                const luasPaket = context.dataset.luasPaket[context.dataIndex] || 0;
+                return `Luas Paket: ${luasPaket} ha`;
+              }
             }
           }
         }
+      }
+    };
+  }
+  
+  // Jika filter kebun aktif, tampilkan per afdeling dan vendor
+  if (filterKebun.value && !filterPaket.value) {
+    const dataPoints = [];
+    let currentKebun = null;
+    
+    // Proses data untuk mendapatkan progress per afdeling dan vendor
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const cells = row.c;
+      
+      if (!cells || cells.length === 0) continue;
+      
+      // Skip baris header, jumlah, total
+      if (cells[1] && (cells[1].v === 'Kebun' || cells[0] && (cells[0].v === 'Jumlah' || cells[0].v === 'Total'))) continue;
+      
+      const kebunName = cells[1] ? cells[1].v : '';
+      const afdName = cells[3] ? cells[3].v : '';
+      const paketName = cells[2] ? cells[2].v : '';
+      
+      // Skip baris yang tidak memiliki kebun dan AFD
+      if (!kebunName && !afdName) continue;
+      
+      // Set currentKebun jika ada
+      if (kebunName) {
+        currentKebun = kebunName;
+      }
+      
+      // Skip baris yang tidak memiliki AFD (kecuali baris nama kebun)
+      if (!afdName && !kebunName) continue;
+      
+      // Hanya proses jika ada kebun dan AFD
+      if (currentKebun && afdName) {
+        // Apply filters using helper function
+        if (!shouldIncludeRow(currentKebun, afdName, paketName)) continue;
         
-        return {
-          labels: dataPoints.map(dp => dp.label),
-          datasets: [{
-            label: 'Progress TU (%)',
-            data: dataPoints.map(dp => dp.progress),
-            backgroundColor: 'rgba(16, 185, 129, 0.5)',
-            borderColor: 'rgba(16, 185, 129, 1)',
-            borderWidth: 1
-          }],
-          options: {
-            scales: {
-              y: yAxisConfig
-            },
-            plugins: {
-              tooltip: {
-                callbacks: {
-                  afterLabel: function(context) {
-                    return `Realisasi: ${context.raw.realizedArea || 0} ha`;
-                  }
-                }
+        // Hanya proses jika kebun sesuai dengan filter
+        if (currentKebun === filterKebun.value) {
+          // Hitung Progress TU dengan fungsi baru (tanpa aktivitas parit)
+          const lcPersentase = calculateProgressTU(cells);
+          const realizedArea = getRealizedArea(cells);
+          
+          // Debug: Log cell values
+          console.log(`Baris ${i}: Kebun=${currentKebun}, Afd=${afdName}, Paket=${paketName}`);
+          console.log("Cells[4]:", cells[4]);
+          
+          // Ambil luas paket dari kolom ke-4 (indeks 4)
+          let luasPaket = 0;
+          if (cells[4]) {
+            // Coba ambil nilai dari properti v atau f
+            if (cells[4].v !== undefined && cells[4].v !== null) {
+              luasPaket = parseFloat(cells[4].v) || 0;
+            } else if (cells[4].f !== undefined && cells[4].f !== null) {
+              // Jika v tidak ada, coba f (formatted value)
+              // Hapus tanda koma dan titik untuk memastikan parsing yang benar
+              const formattedValue = cells[4].f.replace(/[,.]/g, '');
+              luasPaket = parseFloat(formattedValue) || 0;
+            }
+          }
+          
+          console.log(`Luas Paket yang diambil: ${luasPaket}`);
+          
+          // Format label: afdeling - vendor
+          const label = `${afdName} - ${paketName}`;
+          
+          dataPoints.push({
+            label: label,
+            progress: lcPersentase,
+            realizedArea: realizedArea,
+            luasPaket: luasPaket
+          });
+        }
+      }
+    }
+    
+    console.log("Data points yang akan dikirim ke chart:", dataPoints);
+    
+    // Buat array khusus untuk luas paket
+    const luasPaketArray = dataPoints.map(dp => dp.luasPaket);
+    
+    return {
+      labels: dataPoints.map(dp => dp.label),
+      datasets: [{
+        label: 'Progress TU (%)',
+        data: dataPoints.map(dp => dp.progress),
+        backgroundColor: 'rgba(16, 185, 129, 0.5)',
+        borderColor: 'rgba(16, 185, 129, 1)',
+        borderWidth: 1,
+        // Tambahkan data luas paket sebagai properti tambahan
+        luasPaket: luasPaketArray
+      }],
+      options: {
+        scales: {
+          y: yAxisConfig
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              afterLabel: function(context) {
+                // Akses luas paket dari dataset
+                const luasPaket = context.dataset.luasPaket[context.dataIndex] || 0;
+                return `Luas Paket: ${luasPaket} ha`;
               }
             }
           }
-        };
+        }
+      }
+    };
+  }
+  
+  // Jika tidak ada filter, tampilkan per vendor dengan format kodering - afdeling - vendor
+  if (!filterKebun.value && !filterPaket.value) {
+    const dataPoints = [];
+    let currentKebun = null;
+    
+    // Proses data untuk mendapatkan progress per vendor
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const cells = row.c;
+      
+      if (!cells || cells.length === 0) continue;
+      
+      // Skip baris header, jumlah, total
+      if (cells[1] && (cells[1].v === 'Kebun' || cells[0] && (cells[0].v === 'Jumlah' || cells[0].v === 'Total'))) continue;
+      
+      const kebunName = cells[1] ? cells[1].v : '';
+      const afdName = cells[3] ? cells[3].v : '';
+      const paketName = cells[2] ? cells[2].v : '';
+      
+      // Skip baris yang tidak memiliki kebun dan AFD
+      if (!kebunName && !afdName) continue;
+      
+      // Set currentKebun jika ada
+      if (kebunName) {
+        currentKebun = kebunName;
       }
       
-      // Jika tidak ada filter, tampilkan per vendor dengan format kodering - afdeling - vendor
-      if (!filterKebun.value && !filterPaket.value) {
-        const dataPoints = [];
-        let currentKebun = null;
+      // Skip baris yang tidak memiliki AFD (kecuali baris nama kebun)
+      if (!afdName && !kebunName) continue;
+      
+      // Hanya proses jika ada kebun dan AFD
+      if (currentKebun && afdName) {
+        // Apply filters using helper function
+        if (!shouldIncludeRow(currentKebun, afdName, paketName)) continue;
         
-        // Proses data untuk mendapatkan progress per vendor
-        for (let i = 0; i < rows.length; i++) {
-          const row = rows[i];
-          const cells = row.c;
-          
-          if (!cells || cells.length === 0) continue;
-          
-          // Skip baris header, jumlah, total
-          if (cells[1] && (cells[1].v === 'Kebun' || cells[0] && (cells[0].v === 'Jumlah' || cells[0].v === 'Total'))) continue;
-          
-          const kebunName = cells[1] ? cells[1].v : '';
-          const afdName = cells[3] ? cells[3].v : '';
-          const paketName = cells[2] ? cells[2].v : '';
-          
-          // Skip baris yang tidak memiliki kebun dan AFD
-          if (!kebunName && !afdName) continue;
-          
-          // Set currentKebun jika ada
-          if (kebunName) {
-            currentKebun = kebunName;
-          }
-          
-          // Skip baris yang tidak memiliki AFD (kecuali baris nama kebun)
-          if (!afdName && !kebunName) continue;
-          
-          // Hanya proses jika ada kebun dan AFD
-          if (currentKebun && afdName) {
-            // Apply filters using helper function
-            if (!shouldIncludeRow(currentKebun, afdName, paketName)) continue;
-            
-            // Hitung Progress TU dengan fungsi baru (tanpa aktivitas parit)
-            const lcPersentase = calculateProgressTU(cells);
-            const realizedArea = getRealizedArea(cells);
-            
-            // Get kodering for the kebun
-            const kodering = getKodering(currentKebun);
-            
-            // Format label: kodering - afdeling - vendor
-            const label = `${kodering} - ${afdName} - ${paketName}`;
-            
-            dataPoints.push({
-              label: label,
-              progress: lcPersentase,
-              realizedArea: realizedArea
-            });
+        // Hitung Progress TU dengan fungsi baru (tanpa aktivitas parit)
+        const lcPersentase = calculateProgressTU(cells);
+        const realizedArea = getRealizedArea(cells);
+        
+        // Debug: Log cell values
+        console.log(`Baris ${i}: Kebun=${currentKebun}, Afd=${afdName}, Paket=${paketName}`);
+        console.log("Cells[4]:", cells[4]);
+        
+        // Ambil luas paket dari kolom ke-4 (indeks 4)
+        let luasPaket = 0;
+        if (cells[4]) {
+          // Coba ambil nilai dari properti v atau f
+          if (cells[4].v !== undefined && cells[4].v !== null) {
+            luasPaket = parseFloat(cells[4].v) || 0;
+          } else if (cells[4].f !== undefined && cells[4].f !== null) {
+            // Jika v tidak ada, coba f (formatted value)
+            // Hapus tanda koma dan titik untuk memastikan parsing yang benar
+            const formattedValue = cells[4].f.replace(/[,.]/g, '');
+            luasPaket = parseFloat(formattedValue) || 0;
           }
         }
         
-        return {
-          labels: dataPoints.map(dp => dp.label),
-          datasets: [{
-            label: 'Progress TU (%)',
-            data: dataPoints.map(dp => dp.progress),
-            backgroundColor: 'rgba(16, 185, 129, 0.5)',
-            borderColor: 'rgba(16, 185, 129, 1)',
-            borderWidth: 1
-          }],
-          options: {
-            scales: {
-              y: yAxisConfig
-            },
-            plugins: {
-              tooltip: {
-                callbacks: {
-                  afterLabel: function(context) {
-                    return `Realisasi: ${context.raw.realizedArea || 0} ha`;
-                  }
-                }
+        console.log(`Luas Paket yang diambil: ${luasPaket}`);
+        
+        // Get kodering for the kebun
+        const kodering = getKodering(currentKebun);
+        
+        // Format label: kodering - afdeling - vendor
+        const label = `${kodering} - ${afdName} - ${paketName}`;
+        
+        dataPoints.push({
+          label: label,
+          progress: lcPersentase,
+          realizedArea: realizedArea,
+          luasPaket: luasPaket
+        });
+      }
+    }
+    
+    console.log("Data points yang akan dikirim ke chart:", dataPoints);
+    
+    // Buat array khusus untuk luas paket
+    const luasPaketArray = dataPoints.map(dp => dp.luasPaket);
+    
+    return {
+      labels: dataPoints.map(dp => dp.label),
+      datasets: [{
+        label: 'Progress TU (%)',
+        data: dataPoints.map(dp => dp.progress),
+        backgroundColor: 'rgba(16, 185, 129, 0.5)',
+        borderColor: 'rgba(16, 185, 129, 1)',
+        borderWidth: 1,
+        // Tambahkan data luas paket sebagai properti tambahan
+        luasPaket: luasPaketArray
+      }],
+      options: {
+        scales: {
+          y: yAxisConfig
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              afterLabel: function(context) {
+                // Akses luas paket dari dataset
+                const luasPaket = context.dataset.luasPaket[context.dataIndex] || 0;
+                return `Luas Paket: ${luasPaket} ha`;
               }
             }
           }
-        };
+        }
       }
-    });
+    };
+  }
+});
     
     // Data untuk Pie Chart
     const pieChartData = computed(() => {
