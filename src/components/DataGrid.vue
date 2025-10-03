@@ -22,21 +22,21 @@
             <th class="w-12">No</th>
             <th class="w-32">Kebun</th>
             <th class="w-32">Nama Paket</th>
-            <th class="w-24">AFD</th>
-            <th class="w-24">Luas Paket</th>
+            <th class="w-24">Afdeling</th>
+            <th class="w-24">Luas</th>
             <th class="w-64">Pembuatan Parit</th>
             <th class="w-64">Pembuatan Jalan</th> <!-- Kolom baru -->
             <th class="w-64">Pembuatan Teras</th> <!-- Kolom baru -->
-            <th class="w-64">Ripper</th>
+            <th class="w-64">Ripping  </th>
             <th class="w-64">Luku</th>
             <th class="w-64">Tumbang/Chipping</th>
-            <th class="w-64">Menanam Mucuna</th>
-            <th class="w-64">Lubang Tanam</th>
-            <th class="w-64">Mempupuk Lobang</th>
+            <th class="w-64">Menanam Mucuna bracteata</th>
+            <th class="w-64">Lubang Tanam KS</th>
+            <th class="w-64">Mempupuk Lubang KS</th>
             <th class="w-64">Menanam KS</th>
-            <th class="w-64">Progress TU</th>
+            <th class="w-64">Progress overall</th>
             <th class="w-40">Tanggal SPPBJ</th>
-            <th class="w-32">Hari Kerja</th>
+            <th class="w-32">Durasi kerja</th>
           </tr>
         </thead>
         <tbody class="data-grid-body">
@@ -97,7 +97,7 @@
               </td>
               <td class="data-grid-cell">
                 <ProgressItem
-                  title="Ripper"
+                  title="Ripping"
                   :rencana="row.ripper.rencana"
                   :hari-ini="row.ripper.hariIni"
                   :sd-hari-ini="row.ripper.sdHariIni"
@@ -133,7 +133,7 @@
               </td>
               <td class="data-grid-cell">
                 <ProgressItem
-                  title="Lubang Tanam"
+                  title="Lubang Tanam KS"
                   :rencana="row.lubangTanam.rencana"
                   :hari-ini="row.lubangTanam.hariIni"
                   :sd-hari-ini="row.lubangTanam.sdHariIni"
@@ -142,7 +142,7 @@
               </td>
               <td class="data-grid-cell">
                 <ProgressItem
-                  title="Mempupuk Lobang"
+                  title="Mempupuk Lubang"
                   :rencana="row.mempupukLobang.rencana"
                   :hari-ini="row.mempupukLobang.hariIni"
                   :sd-hari-ini="row.mempupukLobang.sdHariIni"
@@ -160,7 +160,7 @@
               </td>
               <td class="data-grid-cell">
                 <ProgressItem
-                  title="Progress Tanam Ulang"
+                  title="Progress Overall"
                   :rencana="row.totalLC.rencana"
                   :hari-ini="row.totalLC.realisasi"
                   :sd-hari-ini="row.totalLC.realisasi"

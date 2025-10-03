@@ -1,16 +1,19 @@
 <!-- src/components/PieChartWithNeedle.vue -->
 <template>
-  <div class="chart-container">
-    <h3 class="chart-title">{{ title }}</h3>
-    <div class="chart-grid-outer">
-      <div class="chart-grid">
-        <div v-for="(item, index) in chartItems" :key="index" class="chart-item">
-          <div class="mini-chart">
-            <canvas :ref="el => setChartRef(el, index)"></canvas>
+  <div class="card">
+    <div class="card-header">
+      <h3 class="text-lg font-medium text-gray-900">{{ title }}</h3>
+    </div>
+    <div class="card-body">
+      <div class="pie-charts-outer">
+        <div class="pie-charts-grid">
+          <div v-for="(item, index) in chartItems" :key="index" class="pie-chart-wrapper">
+            <div class="chart-title">{{ item.label }}</div>
+            <div class="chart-container">
+              <canvas :ref="el => setChartRef(el, index)"></canvas>
+            </div>
             <div class="chart-info">
-              <div class="chart-label">{{ item.label }}</div>
               <div class="chart-value">{{ item.value }}%</div>
-              <!-- <div class="chart-degree">{{ getDegree(item.value) }}°</div> -->
             </div>
           </div>
         </div>
@@ -387,75 +390,71 @@ export default {
 </script>
 
 <style scoped>
-.chart-container {
-  width: 100%;
-  padding: 1rem;
+.card {
   background-color: white;
   border-radius: 0.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
-.chart-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #1F2937;
-  margin-bottom: 1rem;
-  text-align: center;
+.card-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
 }
 
-.chart-grid-outer {
+.card-body {
+  padding: 1.5rem;
+}
+
+/* Style untuk pie charts dengan overflow horizontal */
+.pie-charts-outer {
   overflow-x: auto;
   overflow-y: hidden;
   width: 100%;
-  padding-bottom: 0.5rem; /* Space for scrollbar */
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
 }
 
-.chart-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
+.pie-charts-grid {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  gap: 20px;
   min-width: max-content;
 }
 
-.chart-item {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.mini-chart {
-  width: 100%;
-  max-width: 220px;
-  height: 260px;
-  background-color: #f9fafb;
-  border-radius: 0.375rem;
-  border: 1px solid #e5e7eb;
-  padding: 1rem;
+.pie-chart-wrapper {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  flex: 0 0 auto;
+  width: 300px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: transform 0.2s ease-in-out;
 }
 
-.mini-chart:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.chart-info {
-  margin-top: 0.75rem;
+.chart-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
   text-align: center;
-  width: 100%;
-}
-
-.chart-label {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #4b5563;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 0.25rem;
+  width: 100%;
+}
+
+.chart-container {
+  position: relative;
+  height: 250px;
+  width: 100%;
+}
+
+.chart-info {
+  margin-top: 10px;
+  text-align: center;
+  width: 100%;
 }
 
 .chart-value {
@@ -464,46 +463,33 @@ export default {
   color: #1F2937;
 }
 
-.chart-degree {
-  font-size: 1rem;
-  color: #6B7280;
-  margin-top: 0.25rem;
-  font-weight: 500;
-}
-
 /* Scrollbar styling */
-.chart-grid-outer::-webkit-scrollbar {
+.pie-charts-outer::-webkit-scrollbar {
   height: 8px;
 }
 
-.chart-grid-outer::-webkit-scrollbar-track {
+.pie-charts-outer::-webkit-scrollbar-track {
   background: #f1f1f1;
   border-radius: 4px;
 }
 
-.chart-grid-outer::-webkit-scrollbar-thumb {
+.pie-charts-outer::-webkit-scrollbar-thumb {
   background: #888;
   border-radius: 4px;
 }
 
-.chart-grid-outer::-webkit-scrollbar-thumb:hover {
+.pie-charts-outer::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
 
 /* Responsive adjustments */
 @media (max-width: 640px) {
-  .chart-grid {
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  .pie-chart-wrapper {
+    width: 250px;
   }
   
-  .mini-chart {
-    height: 240px;
-  }
-}
-
-@media (max-width: 480px) {
-  .chart-grid {
-    grid-template-columns: 1fr 1fr;
+  .chart-container {
+    height: 200px;
   }
 }
 </style>
