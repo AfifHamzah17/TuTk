@@ -21,8 +21,8 @@
           <tr>
             <th class="w-12">No</th>
             <th class="w-32">Kebun</th>
-            <th class="w-32">Nama Paket</th>
             <th class="w-24">Afdeling</th>
+            <th class="w-32">Nama Vendor</th>
             <th class="w-24">Luas</th>
             <th class="w-64">Pembuatan Parit</th>
             <th class="w-64">Pembuatan Jalan</th> <!-- Kolom baru -->
@@ -58,10 +58,10 @@
             <tr v-for="(row, index) in group" :key="index" class="data-grid-row">
               <td class="data-grid-cell font-medium">{{ row.no }}</td>
               <td class="data-grid-cell kebun-name">{{ row.kebun }}</td>
-              <td class="data-grid-cell">{{ row.namaPaket }}</td>
               <td class="data-grid-cell">
                 <span class="badge badge-info">{{ row.afd }}</span>
               </td>
+              <td class="data-grid-cell">{{ row.namaPaket }}</td>
               <td class="data-grid-cell">{{ formatNumber(row.luasPaket) }} ha</td>
               <td class="data-grid-cell">
                 <ProgressItem

@@ -12,9 +12,9 @@
             <div class="chart-container">
               <canvas :ref="el => setChartRef(el, index)"></canvas>
             </div>
-            <div class="chart-info">
-              <div class="chart-value">{{ item.value }}%</div>
-            </div>
+            <!-- <div class="chart-info"> -->
+              <!-- <div class="chart-value">{{ item.value }}%</div> -->
+            <!-- </div> -->
           </div>
         </div>
       </div>
@@ -246,12 +246,7 @@ export default {
                 display: false // Hide legend in individual charts
               },
               tooltip: {
-                callbacks: {
-                  label: function(context) {
-                    const label = context.label || '';
-                    return `${label}`;
-                  }
-                }
+                enabled: false // Nonaktifkan tooltip
               }
             }
           },
@@ -325,20 +320,56 @@ export default {
                 ctx.stroke();
               }
               
-              // Draw degree labels at each quarter boundary
-              ctx.font = '10px Arial';
+              // Draw percentage labels at each quarter boundary (outside the pie)
+              ctx.font = 'bold 12px Arial';
               ctx.fillStyle = '#1F2937';
               ctx.textAlign = 'center';
               ctx.textBaseline = 'middle';
               
-              // 0° (top)
-              ctx.fillText('0%', centerX, centerY - radius - 15);
-              // 90° (right)
-              ctx.fillText('25%', centerX + radius + 15, centerY);
-              // 180° (bottom)
-              ctx.fillText('50%', centerX, centerY + radius + 15);
-              // 270° (left)
-              ctx.fillText('75%', centerX - radius - 15, centerY);
+              // Draw percentage value at needle tip
+              if (item.value !== undefined && item.value !== null) {
+                const degree = getDegree(item.value);
+                // Adjust to start from top (subtract 90 degrees)
+                const adjustedDegree = degree - 90;
+                // Convert degrees to radians
+                const angleInRadians = (adjustedDegree * Math.PI) / 180;
+                
+                // Calculate position at needle tip
+                const needleTipX = centerX + Math.cos(angleInRadians) * radius * 1;
+                const needleTipY = centerY + Math.sin(angleInRadians) * radius * 1;
+                
+                // Draw background for percentage text
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                // Measure text width for background
+                const text = `${item.value}%`;
+                const textWidth = ctx.measureText(text).width;
+                
+                // Draw background rectangle
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.fillRect(
+                  needleTipX - textWidth / 2 - 4,
+                  needleTipY - 10,
+                  textWidth + 8,
+                  20
+                );
+                
+                // Draw border
+                ctx.strokeStyle = '#1F2937';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(
+                  needleTipX - textWidth / 2 - 4,
+                  needleTipY - 10,
+                  textWidth + 8,
+                  20
+                );
+                
+                // Draw text
+                ctx.fillStyle = '#1F2937';
+                ctx.fillText(text, needleTipX, needleTipY);
+              }
             }
           }]
         });
@@ -479,7 +510,7 @@ export default {
 }
 
 .pie-charts-outer::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: #5555;
 }
 
 /* Responsive adjustments */

@@ -5,7 +5,11 @@
       <h3 class="text-lg font-medium text-gray-900">{{ title }}</h3>
     </div>
     <div class="card-body">
-      <div class="radar-charts-outer">
+      <!-- Tampilkan pesan jika tidak ada data -->
+      <div v-if="!charts || charts.length === 0" class="text-center py-10 text-gray-500">
+        Tidak ada data untuk ditampilkan.
+      </div>
+      <div v-else class="radar-charts-outer">
         <div class="radar-charts-grid">
           <div v-for="(chart, index) in charts" :key="index" class="radar-chart-wrapper">
             <div class="chart-title">{{ chart.title }}</div>
@@ -20,7 +24,7 @@
 </template>
 
 <script>
-import { ref, onMounted, watch, onBeforeUnmount } from 'vue';
+import { ref, onMounted, watch, onBeforeUnmount, nextTick } from 'vue';
 import { Chart, registerables } from 'chart.js';
 Chart.register(...registerables);
 
@@ -30,13 +34,20 @@ export default {
     title: String,
     charts: {
       type: Array,
-      required: true
+      required: true,
+      default: () => []
     }
   },
   setup(props) {
     const chartCanvases = ref([]);
     const chartInstances = ref([]);
     let tooltipEl = null;
+
+    // Fungsi helper untuk format angka
+    const formatNumber = (num) => {
+      if (num === null || num === undefined || isNaN(num)) return '0';
+      return parseFloat(num).toLocaleString('id-ID');
+    };
 
     const setChartCanvas = (el, index) => {
       if (el) {
@@ -45,7 +56,6 @@ export default {
     };
 
     const createCustomTooltip = () => {
-      // Buat elemen tooltip jika belum ada
       if (!tooltipEl) {
         tooltipEl = document.createElement('div');
         tooltipEl.id = 'chartjs-tooltip';
@@ -62,7 +72,6 @@ export default {
         tooltipEl.style.maxWidth = '350px';
         tooltipEl.style.zIndex = '1000';
         
-        // Tambahkan style untuk konten tooltip
         const style = document.createElement('style');
         style.innerHTML = `
           #chartjs-tooltip .tooltip-content {
@@ -100,7 +109,6 @@ export default {
       const canvas = chartCanvases.value[index];
       if (!canvas) return;
       
-      // Hancurkan chart instance yang sudah ada jika ada
       if (chartInstances.value[index]) {
         chartInstances.value[index].destroy();
       }
@@ -108,29 +116,19 @@ export default {
       const ctx = canvas.getContext('2d');
       const chartData = props.charts[index];
       
-      // Pastikan chartData ada
       if (!chartData) return;
       
-      // Ambil detail info dari data
+      // Ambil detailInfo dari dataset
       const detailInfo = chartData.data.datasets[0]?.detailInfo || [];
       
-      // Palet warna yang cantik untuk setiap item
       const colors = [
-        'rgba(255, 99, 132, 0.7)',   // Merah - Pembuatan Parit
-        'rgba(54, 162, 235, 0.7)',   // Biru - Pembuatan Jalan
-        'rgba(255, 206, 86, 0.7)',   // Kuning - Pembuatan Teras
-        'rgba(75, 192, 192, 0.7)',   // Cyan - Ripping
-        'rgba(153, 102, 255, 0.7)',  // Ungu - Luku
-        'rgba(255, 159, 64, 0.7)',   // Oranye - Tumbang/Chipping
-        'rgba(199, 199, 199, 0.7)',  // Abu-abu - Menanam Mucuna
-        'rgba(83, 102, 255, 0.7)',   // Biru Tua - Lubang Tanam KS
-        'rgba(40, 159, 64, 0.7)'    // Hijau Tua - Menanam KS
+        'rgba(255, 99, 132, 0.7)', 'rgba(54, 162, 235, 0.7)', 'rgba(255, 206, 86, 0.7)',
+        'rgba(75, 192, 192, 0.7)', 'rgba(153, 102, 255, 0.7)', 'rgba(255, 159, 64, 0.7)',
+        'rgba(199, 199, 199, 0.7)', 'rgba(83, 102, 255, 0.7)', 'rgba(40, 159, 64, 0.7)'
       ];
       
-      // Buat dataset dengan warna yang berbeda untuk setiap item
       const dataset = {
-        label: 'Progress (%)',
-        data: chartData.data.datasets[0].data,
+        ...chartData.data.datasets[0],
         backgroundColor: colors.map(color => color.replace('0.7', '0.2')),
         borderColor: colors,
         pointBackgroundColor: colors,
@@ -139,145 +137,133 @@ export default {
         pointHoverBorderColor: colors
       };
       
+      const options = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            enabled: false, // Nonaktifkan tooltip default
+            external: function(context) {
+              const tooltip = createCustomTooltip();
+              
+              if (context.tooltip.opacity === 0) {
+                tooltip.style.opacity = 0;
+                return;
+              }
+              
+              const position = context.chart.canvas.getBoundingClientRect();
+              tooltip.style.left = position.left + window.pageXOffset + context.tooltip.caretX + 'px';
+              tooltip.style.top = position.top + window.pageYOffset + context.tooltip.caretY + 'px';
+              
+              if (context.tooltip.body) {
+                const dataPoint = context.tooltip.dataPoints[0];
+                const dataIndex = dataPoint.dataIndex;
+                const label = dataPoint.label;
+                const value = dataPoint.raw;
+                
+                // AMBIL DATA DETAIL UNTUK TOOLTIP
+                const details = detailInfo[dataIndex];
+                const { rencana, realisasi } = details || { rencana: 0, realisasi: 0 };
+                
+                // Format konten tooltip yang baru
+                let innerHtml = `
+                  <div class="tooltip-header">
+                    ${chartData.title} - ${label}
+                  </div>
+                  <div class="tooltip-items">
+                    <div class="tooltip-item">
+                      <span class="tooltip-item-number">•</span>
+                      <span>Realisasi: ${formatNumber(realisasi)}</span>
+                    </div>
+                    <div class="tooltip-item">
+                      <span class="tooltip-item-number">•</span>
+                      <span>Rencana: ${formatNumber(rencana)}</span>
+                    </div>
+                    <div class="tooltip-item" style="font-weight: 600; margin-top: 4px;">
+                      <span class="tooltip-item-number">•</span>
+                      <span>Progress: ${value.toFixed(1)}%</span>
+                    </div>
+                  </div>
+                `;
+                
+                tooltip.querySelector('.tooltip-content').innerHTML = innerHtml;
+              }
+              
+              tooltip.style.opacity = 1;
+            }
+          }
+        },
+        scales: {
+          r: {
+            beginAtZero: true,
+            max: 100,
+            ticks: {
+              stepSize: 20,
+              callback: function(value) {
+                return value + '%';
+              }
+            }
+          }
+        },
+        onClick: (event, elements) => {
+          if (elements.length > 0) {
+            const index = elements[0].index;
+            const label = chartData.data.labels[index];
+            const value = chartData.data.datasets[0].data[index];
+            const details = detailInfo[index];
+            const { rencana, realisasi } = details || { rencana: 0, realisasi: 0 };
+            
+            const detailText = `${chartData.title} - ${label}\n\nRealisasi: ${formatNumber(realisasi)}\nRencana: ${formatNumber(rencana)}\nProgress: ${value.toFixed(1)}%`;
+            alert(detailText);
+          }
+        },
+        onHover: (event, elements) => {
+          event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+        }
+      };
+      
+      if (chartData.options) {
+        if (chartData.options.scales?.r) {
+          options.scales.r = { ...options.scales.r, ...chartData.options.scales.r };
+        }
+      }
+      
       chartInstances.value[index] = new Chart(ctx, {
         type: 'radar',
         data: {
           labels: chartData.data.labels,
           datasets: [dataset]
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: false // Sembunyikan legenda
-            },
-            tooltip: {
-              enabled: false, // Nonaktifkan tooltip default
-              external: function(context) {
-                // Buat atau dapatkan elemen tooltip
-                const tooltip = createCustomTooltip();
-                
-                // Sembunyikan jika tidak ada tooltip
-                if (context.tooltip.opacity === 0) {
-                  tooltip.style.opacity = 0;
-                  return;
-                }
-                
-                // Set posisi tooltip
-                const position = context.chart.canvas.getBoundingClientRect();
-                tooltip.style.left = position.left + window.pageXOffset + context.tooltip.caretX + 'px';
-                tooltip.style.top = position.top + window.pageYOffset + context.tooltip.caretY + 'px';
-                
-                // Set konten tooltip
-                if (context.tooltip.body) {
-                  const dataPoint = context.tooltip.dataPoints[0];
-                  const dataIndex = dataPoint.dataIndex;
-                  const label = dataPoint.label;
-                  const value = dataPoint.raw;
-                  
-                  // Ambil detail info untuk data ini
-                  const details = detailInfo[dataIndex] || '';
-                  
-                  // Format konten tooltip
-                  let innerHtml = `
-                    <div class="tooltip-header">
-                      ${chartData.title} - ${label}: ${value.toFixed(1)}%
-                    </div>
-                    <div class="tooltip-items">
-                  `;
-                  
-                  // Tambahkan detail item
-                  if (details) {
-                    const items = details.split('<br>');
-                    items.forEach((item, index) => {
-                      if (item.trim()) {
-                        innerHtml += `
-                          <div class="tooltip-item">
-                            <span class="tooltip-item-number">${index + 1}.</span>
-                            <span>${item.trim()}</span>
-                          </div>
-                        `;
-                      }
-                    });
-                  } else {
-                    innerHtml += '<div class="tooltip-item">Tidak ada detail</div>';
-                  }
-                  
-                  innerHtml += '</div>';
-                  
-                  tooltip.querySelector('.tooltip-content').innerHTML = innerHtml;
-                }
-                
-                // Tampilkan tooltip
-                tooltip.style.opacity = 1;
-              }
-            }
-          },
-          scales: {
-            r: {
-              beginAtZero: true,
-              max: 100,
-              ticks: {
-                stepSize: 20,
-                callback: function(value) {
-                  return value + '%';
-                }
-              }
-            }
-          },
-          onClick: (event, elements) => {
-            if (elements.length > 0) {
-              const index = elements[0].index;
-              const label = chartData.data.labels[index];
-              const value = chartData.data.datasets[0].data[index];
-              const details = detailInfo[index] || '';
-              
-              // Tampilkan detail dalam modal atau alert
-              let detailText = `${chartData.title} - ${label}: ${value.toFixed(1)}%\n\n`;
-              if (details) {
-                const items = details.split('<br>');
-                items.forEach((item, i) => {
-                  if (item.trim()) {
-                    detailText += `${i + 1}. ${item.trim()}\n`;
-                  }
-                });
-              }
-              
-              // Gunakan alert untuk sederhananya
-              alert(detailText);
-            }
-          },
-          onHover: (event, elements) => {
-            event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
-          }
-        }
+        options: options
       });
     };
 
     const renderAllCharts = () => {
-      // Pastikan props.charts ada dan merupakan array
       if (props.charts && Array.isArray(props.charts) && props.charts.length > 0) {
-        // Render semua chart
         props.charts.forEach((_, index) => {
           renderChart(index);
         });
       }
     };
 
+    const delayedRender = () => {
+      nextTick(() => {
+        renderAllCharts();
+      });
+    };
+
     onMounted(() => {
-      renderAllCharts();
+      delayedRender();
     });
 
     watch(() => props.charts, (newCharts) => {
-      // Pastikan newCharts ada sebelum render
       if (newCharts && Array.isArray(newCharts)) {
-        renderAllCharts();
+        delayedRender();
       }
     }, { deep: true });
 
     onBeforeUnmount(() => {
-      // Hancurkan semua chart instance
       chartInstances.value.forEach(instance => {
         if (instance) {
           instance.destroy();

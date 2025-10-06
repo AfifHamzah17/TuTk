@@ -71,14 +71,22 @@
           />
         </div>
         <div class="pie-chart-outer">
+          <!-- Tambahkan legenda di atas grafik -->
+          
+          <div class="chart-legend">
+            <div v-for="(item, index) in needleChartLegend" :key="index" class="legend-item">
+              <div class="legend-color" :style="`background-color: ${item.color}`"></div>
+              <span>{{ item.label }}</span>
+            </div>
+          </div>
           <PieChartWithNeedle 
             :title="needleChartTitle"
+            :legend="needleChartLegend"
             :data="pieWithNeedleChartData"
             :average-progress="filteredAvgProgress"
           />
         </div>
       </div>
-
       <!-- Second Row: Multiple Radar Charts -->
 <!-- Second Row: Multiple Radar Charts -->
 <div class="mb-8">
@@ -162,6 +170,14 @@ export default {
       if (this.filterPaket) return `Progress TU berdasarkan kuadran per Afdeling`;
       if (this.filterKebun) return `Progress TU berdasarkan kuadran per Afdeling dan Vendor`;
       return 'Progress TU Berdasarkan Kuadran Per Vendor';
+    },
+    needleChartLegend() {
+      return [
+        { color: 'rgba(239, 68, 68, 0.7)', label: 'Merah = 0-25' },
+        { color: 'rgba(245, 158, 11, 0.7)', label: 'Kuning = 25,01 - 50' },
+        { color: 'rgba(59, 130, 246, 0.7)', label: 'Biru = 50,01-75' },
+        { color: 'rgba(16, 185, 129, 0.7)', label: 'Hijau = 75,01 - 100' }
+      ];
     }
   },
   mounted() {
@@ -1506,8 +1522,7 @@ const barChartData = computed(() => {
       };
     });
     
-    // Data untuk Radar Chart - TANPA AKTIVITAS PARIT
-// Data untuk Radar Chart - Multiple Charts
+// Data untuk Radar Chart - TANPA AKTIVITAS PARIT
 const radarChartData = computed(() => {
   if (!rawData.value || !rawData.value.table || !rawData.value.table.rows) {
     return [];
@@ -1566,52 +1581,93 @@ const radarChartData = computed(() => {
       let label = '';
       
       if (filterKebun.value && filterPaket.value) {
-        // Jika filter kebun dan vendor aktif, tampilkan per afdeling
         label = afdName;
       } else if (filterPaket.value && !filterKebun.value) {
-        // Jika filter vendor aktif, tampilkan per afdeling dengan kodering
         const kodering = getKodering(currentKebun);
         label = `${kodering} - AFD ${afdName}`;
       } else if (filterKebun.value && !filterPaket.value) {
-        // Jika filter kebun aktif, tampilkan per afdeling dan vendor
         label = `AFD ${afdName} - ${paketName}`;
       } else {
-        // Jika tidak ada filter, tampilkan Per Vendor dengan format kodering - AFD afdeling - vendor
         const kodering = getKodering(currentKebun);
         label = `${kodering} - AFD ${afdName} - ${paketName}`;
       }
       
+      // Fungsi untuk menghitung persentase
+      const calculatePercentage = (realisasi, rencana) => {
+        if (!rencana || rencana === 0) return 0;
+        return (realisasi / rencana) * 100;
+      };
+      
       // Aktivitas-aktivitas dengan indeks kolom yang sesuai
       const activities = [
-        { name: 'Pembuatan Parit (Mtr)', rencana: cells[5], realisasi: cells[6] },    // Kolom 5 (index 4) / Kolom 6 (index 5)
-        { name: 'Pembuatan Jalan (Mtr)', rencana: cells[7], realisasi: cells[8] },    // Kolom 7 (index 6) / Kolom 8 (index 7)
-        { name: 'Pembuatan Teras (Mtr)', rencana: cells[9], realisasi: cells[10] },   // Kolom 9 (index 8) / Kolom 10 (index 9)
-        { name: 'Ripping (ha)', rencana: cells[11], realisasi: cells[12] },          // Kolom 11 (index 10) / Kolom 12 (index 11)
-        { name: 'Luku (ha)', rencana: cells[13], realisasi: cells[14] },              // Kolom 13 (index 12) / Kolom 14 (index 13)
-        { name: 'Tumbang/Chipping (ha)', rencana: cells[15], realisasi: cells[16] }, // Kolom 15 (index 14) / Kolom 16 (index 15)
-        { name: 'Menanam Mucuna (ha)', rencana: cells[21], realisasi: cells[22] },   // Kolom 21 (index 20) / Kolom 22 (index 21)
-        { name: 'Lubang Tanam KS (ha)', rencana: cells[25], realisasi: cells[26] },  // Kolom 25 (index 24) / Kolom 26 (index 25)
-        { name: 'Menanam KS (ha)', rencana: cells[29], realisasi: cells[30] }         // Kolom 29 (index 28) / Kolom 30 (index 29)
+        { 
+          name: 'Pembuatan Parit (Mtr)', 
+          rencana: cells[17] ? cells[17].v : 0, 
+          realisasi: cells[19] ? cells[19].v : 0 
+        },
+        { 
+          name: 'Pembuatan Jalan (Mtr)', 
+          rencana: cells[37] ? cells[37].v : 0, 
+          realisasi: cells[39] ? cells[39].v : 0 
+        },
+        { 
+          name: 'Pembuatan Teras (Mtr)', 
+          rencana: cells[41] ? cells[41].v : 0, 
+          realisasi: cells[43] ? cells[43].v : 0 
+        },
+        { 
+          name: 'Ripping (ha)', 
+          rencana: cells[5] ? cells[5].v : 0, 
+          realisasi: cells[7] ? cells[7].v : 0 
+        },
+        { 
+          name: 'Luku (ha)', 
+          rencana: cells[9] ? cells[9].v : 0, 
+          realisasi: cells[11] ? cells[11].v : 0 
+        },
+        { 
+          name: 'Tumbang/Chipping (ha)', 
+          rencana: cells[13] ? cells[13].v : 0, 
+          realisasi: cells[15] ? cells[15].v : 0 
+        },
+        { 
+          name: 'Menanam Mucuna (ha)', 
+          rencana: cells[21] ? cells[21].v : 0, 
+          realisasi: cells[23] ? cells[23].v : 0 
+        },
+        { 
+          name: 'Lubang Tanam KS (ha)', 
+          rencana: cells[25] ? cells[25].v : 0, 
+          realisasi: cells[27] ? cells[27].v : 0 
+        },
+        { 
+          name: 'Menanam KS (ha)', 
+          rencana: cells[33] ? cells[33].v : 0, 
+          realisasi: cells[35] ? cells[35].v : 0 
+        }
       ];
       
-      // Array untuk menyimpan data aktivitas
+      // Array untuk menyimpan data aktivitas (persentase)
       const activityData = [];
+      // Array baru untuk menyimpan detail (rencana & realisasi)
+      const detailInfo = [];
       
       // Proses setiap aktivitas
       activities.forEach(activity => {
-        const rencana = activity.rencana ? (activity.rencana.v || 0) : 0;
-        const realisasi = activity.realisasi ? (activity.realisasi.v || 0) : 0;
+        const rencana = parseFloat(activity.rencana) || 0;
+        const realisasi = parseFloat(activity.realisasi) || 0;
         
         // Hitung progress = (realisasi / rencana) * 100
-        let persentase = 0;
-        if (rencana > 0) {
-          persentase = (realisasi / rencana) * 100;
-        }
-        
-        // Batasi persentase maksimal 100%
+        let persentase = calculatePercentage(realisasi, rencana);
         persentase = Math.min(persentase, 100);
         
         activityData.push(persentase);
+        
+        // Simpan detail untuk tooltip
+        detailInfo.push({
+          rencana: rencana,
+          realisasi: realisasi
+        });
       });
       
       // Buat chart data untuk vendor/kebun/afdeling ini
@@ -1622,6 +1678,8 @@ const radarChartData = computed(() => {
           datasets: [{
             label: 'Progress (%)',
             data: activityData,
+            // TAMBAHKAN detailInfo KE DALAM DATASET
+            detailInfo: detailInfo, 
             backgroundColor: 'rgba(59, 130, 246, 0.2)',
             borderColor: 'rgba(59, 130, 246, 1)',
             pointBackgroundColor: 'rgba(59, 130, 246, 1)',
@@ -1657,9 +1715,9 @@ const radarChartData = computed(() => {
     }
   }
   
+  console.log("Radar Chart Data:", chartsData);
   return chartsData;
 });
-    
     // Data for Pie Chart with Needle - similar to bar chart data
     const pieWithNeedleChartData = computed(() => {
       if (!rawData.value || !rawData.value.table || !rawData.value.table.rows) {
@@ -2265,5 +2323,26 @@ const radarChartData = computed(() => {
 
 .pie-chart-outer::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+/* Style untuk legenda */
+.chart-legend {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin: 0 10px;
+}
+
+.legend-color {
+  width: 15px;
+  height: 15px;
+  margin-right: 5px;
+  border-radius: 3px;
 }
 </style>
