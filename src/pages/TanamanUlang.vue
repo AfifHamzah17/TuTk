@@ -72,13 +72,6 @@
         </div>
         <div class="pie-chart-outer">
           <!-- Tambahkan legenda di atas grafik -->
-          
-          <div class="chart-legend">
-            <div v-for="(item, index) in needleChartLegend" :key="index" class="legend-item">
-              <div class="legend-color" :style="`background-color: ${item.color}`"></div>
-              <span>{{ item.label }}</span>
-            </div>
-          </div>
           <PieChartWithNeedle 
             :title="needleChartTitle"
             :legend="needleChartLegend"
@@ -171,12 +164,14 @@ export default {
       if (this.filterKebun) return `Progress TU berdasarkan kuadran per Afdeling dan Vendor`;
       return 'Progress TU Berdasarkan Kuadran Per Vendor';
     },
-    needleChartLegend() {
-      return [
-        { color: 'rgba(239, 68, 68, 0.7)', label: 'Merah = 0-25' },
-        { color: 'rgba(245, 158, 11, 0.7)', label: 'Kuning = 25,01 - 50' },
-        { color: 'rgba(59, 130, 246, 0.7)', label: 'Biru = 50,01-75' },
-        { color: 'rgba(16, 185, 129, 0.7)', label: 'Hijau = 75,01 - 100' }
+  
+  needleChartLegend() {
+    // Sesuaikan dengan kebutuhan legend Anda
+    return [
+      { label: 'Sangat Rendah', color: '#EF4444' },
+      { label: 'Rendah', color: '#F59E0B' },
+      { label: 'Tinggi', color: '#4F46E5' },
+      { label: 'Sangat Tinggi', color: '#10B981' }
       ];
     }
   },

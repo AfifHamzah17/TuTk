@@ -6,15 +6,19 @@
     </div>
     <div class="card-body">
       <div class="pie-charts-outer">
+                    <!-- Legend untuk setiap chart -->
+            <div class="chart-legend">
+              <div v-for="(legendItem, legendIndex) in legend" :key="legendIndex" class="legend-item">
+                <div class="legend-color" :style="`background-color: ${legendItem.color}`"></div>
+                <span>{{ legendItem.label }}</span>
+              </div>
+            </div>
         <div class="pie-charts-grid">
           <div v-for="(item, index) in chartItems" :key="index" class="pie-chart-wrapper">
             <div class="chart-title">{{ item.label }}</div>
             <div class="chart-container">
               <canvas :ref="el => setChartRef(el, index)"></canvas>
             </div>
-            <!-- <div class="chart-info"> -->
-              <!-- <div class="chart-value">{{ item.value }}%</div> -->
-            <!-- </div> -->
           </div>
         </div>
       </div>
@@ -38,6 +42,16 @@ export default {
     averageProgress: {
       type: Number,
       required: true
+    },
+    // Tambahkan prop legend
+    legend: {
+      type: Array,
+      default: () => [
+        { label: '76-100%', color: '#10B981' },
+        { label: '0-25%', color: '#EF4444' },
+        { label: '26-50%', color: '#F59E0B' },
+        { label: '51-75%', color: '#4F46E5' }
+      ]
     }
   },
   setup(props) {
@@ -494,6 +508,29 @@ export default {
   color: #1F2937;
 }
 
+/* Style untuk legend */
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 10px;
+  gap: 8px;
+  width: 100%;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  margin-right: 4px;
+}
+
 /* Scrollbar styling */
 .pie-charts-outer::-webkit-scrollbar {
   height: 8px;
@@ -510,7 +547,7 @@ export default {
 }
 
 .pie-charts-outer::-webkit-scrollbar-thumb:hover {
-  background: #5555;
+  background: #555;
 }
 
 /* Responsive adjustments */

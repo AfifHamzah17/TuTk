@@ -25,8 +25,8 @@
             <th class="w-32">Nama Vendor</th>
             <th class="w-24">Luas</th>
             <th class="w-64">Pembuatan Parit</th>
-            <th class="w-64">Pembuatan Jalan</th> <!-- Kolom baru -->
-            <th class="w-64">Pembuatan Teras</th> <!-- Kolom baru -->
+            <th class="w-64">Pembuatan Jalan</th>
+            <th class="w-64">Pembuatan Teras</th>
             <th class="w-64">Ripping  </th>
             <th class="w-64">Luku</th>
             <th class="w-64">Tumbang/Chipping</th>
@@ -36,154 +36,172 @@
             <th class="w-64">Menanam KS</th>
             <th class="w-64">Progress overall</th>
             <th class="w-40">Tanggal SPPBJ</th>
-            <th class="w-32">Durasi kerja</th>
+            <th class="w-32">Durasi kerja</th>
           </tr>
         </thead>
         <tbody class="data-grid-body">
           <template v-for="(group, groupName) in paginatedGroupedData" :key="groupName">
             <!-- Header Group Kebun -->
             <tr class="kebun-group">
-              <td colspan="18" class="kebun-header px-6 py-3"> <!-- Ubah colspan dari 16 ke 18 -->
+              <td colspan="18" class="kebun-header px-6 py-3 cursor-pointer" @click="toggleGroup(groupName)">
                 <div class="flex items-center">
+                  <!-- Ikon untuk toggle minimize/maximize -->
+                  <svg 
+                    class="w-5 h-5 text-green-600 mr-2 transform transition-transform duration-200" 
+                    :class="{ 'rotate-90': !minimizedGroups[groupName] }"
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24" 
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
                   <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
                   </svg>
                   <span class="text-lg font-semibold">{{ groupName }}</span>
                   <span class="ml-2 text-sm text-gray-500">({{ group.length }} AFD)</span>
+                  <!-- Status indikator -->
+                  <span class="ml-2 text-xs px-2 py-1 rounded-full" 
+                        :class="minimizedGroups[groupName] ? 'bg-gray-200 text-gray-700' : 'bg-green-100 text-green-800'">
+                    {{ minimizedGroups[groupName] ? 'Minimized' : 'Expanded' }}
+                  </span>
                 </div>
               </td>
             </tr>
             
-            <!-- Data per AFD dalam group -->
-            <tr v-for="(row, index) in group" :key="index" class="data-grid-row">
-              <td class="data-grid-cell font-medium">{{ row.no }}</td>
-              <td class="data-grid-cell kebun-name">{{ row.kebun }}</td>
-              <td class="data-grid-cell">
-                <span class="badge badge-info">{{ row.afd }}</span>
-              </td>
-              <td class="data-grid-cell">{{ row.namaPaket }}</td>
-              <td class="data-grid-cell">{{ formatNumber(row.luasPaket) }} ha</td>
-              <td class="data-grid-cell">
-                <ProgressItem
-                  title="Pembuatan Parit"
-                  unit="Mtr"
-                  :rencana="row.pembuatanParit.rencana"
-                  :hari-ini="row.pembuatanParit.hariIni"
-                  :sd-hari-ini="row.pembuatanParit.sdHariIni"
-                  :persentase="row.pembuatanParit.persentase"
-                />
-              </td>
-              <!-- Kolom baru: Pembuatan Jalan -->
-              <td class="data-grid-cell">
-                <ProgressItem
-                  title="Pembuatan Jalan"
-                  unit="Mtr"
-                  :rencana="row.pembuatanJalan.rencana"
-                  :hari-ini="row.pembuatanJalan.hariIni"
-                  :sd-hari-ini="row.pembuatanJalan.sdHariIni"
-                  :persentase="row.pembuatanJalan.persentase"
-                />
-              </td>
-              <!-- Kolom baru: Pembuatan Teras -->
-              <td class="data-grid-cell">
-                <ProgressItem
-                  title="Pembuatan Teras"
-                  unit="Mtr"
-                  :rencana="row.pembuatanTeras.rencana"
-                  :hari-ini="row.pembuatanTeras.hariIni"
-                  :sd-hari-ini="row.pembuatanTeras.sdHariIni"
-                  :persentase="row.pembuatanTeras.persentase"
-                />
-              </td>
-              <td class="data-grid-cell">
-                <ProgressItem
-                  title="Ripping"
-                  :rencana="row.ripper.rencana"
-                  :hari-ini="row.ripper.hariIni"
-                  :sd-hari-ini="row.ripper.sdHariIni"
-                  :persentase="row.ripper.persentase"
-                />
-              </td>
-              <td class="data-grid-cell">
-                <ProgressItem
-                  title="Luku"
-                  :rencana="row.luku.rencana"
-                  :hari-ini="row.luku.hariIni"
-                  :sd-hari-ini="row.luku.sdHariIni"
-                  :persentase="row.luku.persentase"
-                />
-              </td>
-              <td class="data-grid-cell">
-                <ProgressItem
-                  title="Tumbang/Chipping"
-                  :rencana="row.tumbangChipping.rencana"
-                  :hari-ini="row.tumbangChipping.hariIni"
-                  :sd-hari-ini="row.tumbangChipping.sdHariIni"
-                  :persentase="row.tumbangChipping.persentase"
-                />
-              </td>
-              <td class="data-grid-cell">
-                <ProgressItem
-                  title="Menanam Mucuna"
-                  :rencana="row.menanamMucuna.rencana"
-                  :hari-ini="row.menanamMucuna.hariIni"
-                  :sd-hari-ini="row.menanamMucuna.sdHariIni"
-                  :persentase="row.menanamMucuna.persentase"
-                />
-              </td>
-              <td class="data-grid-cell">
-                <ProgressItem
-                  title="Lubang Tanam KS"
-                  :rencana="row.lubangTanam.rencana"
-                  :hari-ini="row.lubangTanam.hariIni"
-                  :sd-hari-ini="row.lubangTanam.sdHariIni"
-                  :persentase="row.lubangTanam.persentase"
-                />
-              </td>
-              <td class="data-grid-cell">
-                <ProgressItem
-                  title="Mempupuk Lubang"
-                  :rencana="row.mempupukLobang.rencana"
-                  :hari-ini="row.mempupukLobang.hariIni"
-                  :sd-hari-ini="row.mempupukLobang.sdHariIni"
-                  :persentase="row.mempupukLobang.persentase"
-                />
-              </td>
-              <td class="data-grid-cell">
-                <ProgressItem
-                  title="Menanam KS"
-                  :rencana="row.menanamKS.rencana"
-                  :hari-ini="row.menanamKS.hariIni"
-                  :sd-hari-ini="row.menanamKS.sdHariIni"
-                  :persentase="row.menanamKS.persentase"
-                />
-              </td>
-              <td class="data-grid-cell">
-                <ProgressItem
-                  title="Progress Overall"
-                  :rencana="row.totalLC.rencana"
-                  :hari-ini="row.totalLC.realisasi"
-                  :sd-hari-ini="row.totalLC.realisasi"
-                  :persentase="row.totalLC.persentase"
-                />
-              </td>
-              <td class="data-grid-cell">
-                <div class="flex items-center">
-                  <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                  </svg>
-                  <span>{{ formatDate(row.tanggalSPPBJ) }}</span>
-                </div>
-              </td>
-              <td class="data-grid-cell">
-                <div class="flex items-center">
-                  <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  </svg>
-                  <span>{{ row.jumlahHariKerja }} hari</span>
-                </div>
-              </td>
-            </tr>
+            <!-- Data per AFD dalam group - hanya ditampilkan jika grup tidak diminimalkan -->
+            <template v-if="!minimizedGroups[groupName]">
+              <tr v-for="(row, index) in group" :key="index" class="data-grid-row">
+                <td class="data-grid-cell font-medium">{{ row.no }}</td>
+                <td class="data-grid-cell kebun-name">{{ row.kebun }}</td>
+                <td class="data-grid-cell">
+                  <span class="badge badge-info">{{ row.afd }}</span>
+                </td>
+                <td class="data-grid-cell">{{ row.namaPaket }}</td>
+                <td class="data-grid-cell">{{ formatNumber(row.luasPaket) }} ha</td>
+                <td class="data-grid-cell">
+                  <ProgressItem
+                    title="Pembuatan Parit"
+                    unit="Mtr"
+                    :rencana="row.pembuatanParit.rencana"
+                    :hari-ini="row.pembuatanParit.hariIni"
+                    :sd-hari-ini="row.pembuatanParit.sdHariIni"
+                    :persentase="row.pembuatanParit.persentase"
+                  />
+                </td>
+                <!-- Kolom baru: Pembuatan Jalan -->
+                <td class="data-grid-cell">
+                  <ProgressItem
+                    title="Pembuatan Jalan"
+                    unit="Mtr"
+                    :rencana="row.pembuatanJalan.rencana"
+                    :hari-ini="row.pembuatanJalan.hariIni"
+                    :sd-hari-ini="row.pembuatanJalan.sdHariIni"
+                    :persentase="row.pembuatanJalan.persentase"
+                  />
+                </td>
+                <!-- Kolom baru: Pembuatan Teras -->
+                <td class="data-grid-cell">
+                  <ProgressItem
+                    title="Pembuatan Teras"
+                    unit="Mtr"
+                    :rencana="row.pembuatanTeras.rencana"
+                    :hari-ini="row.pembuatanTeras.hariIni"
+                    :sd-hari-ini="row.pembuatanTeras.sdHariIni"
+                    :persentase="row.pembuatanTeras.persentase"
+                  />
+                </td>
+                <td class="data-grid-cell">
+                  <ProgressItem
+                    title="Ripping"
+                    :rencana="row.ripper.rencana"
+                    :hari-ini="row.ripper.hariIni"
+                    :sd-hari-ini="row.ripper.sdHariIni"
+                    :persentase="row.ripper.persentase"
+                  />
+                </td>
+                <td class="data-grid-cell">
+                  <ProgressItem
+                    title="Luku"
+                    :rencana="row.luku.rencana"
+                    :hari-ini="row.luku.hariIni"
+                    :sd-hari-ini="row.luku.sdHariIni"
+                    :persentase="row.luku.persentase"
+                  />
+                </td>
+                <td class="data-grid-cell">
+                  <ProgressItem
+                    title="Tumbang/Chipping"
+                    :rencana="row.tumbangChipping.rencana"
+                    :hari-ini="row.tumbangChipping.hariIni"
+                    :sd-hari-ini="row.tumbangChipping.sdHariIni"
+                    :persentase="row.tumbangChipping.persentase"
+                  />
+                </td>
+                <td class="data-grid-cell">
+                  <ProgressItem
+                    title="Menanam Mucuna"
+                    :rencana="row.menanamMucuna.rencana"
+                    :hari-ini="row.menanamMucuna.hariIni"
+                    :sd-hari-ini="row.menanamMucuna.sdHariIni"
+                    :persentase="row.menanamMucuna.persentase"
+                  />
+                </td>
+                <td class="data-grid-cell">
+                  <ProgressItem
+                    title="Lubang Tanam KS"
+                    :rencana="row.lubangTanam.rencana"
+                    :hari-ini="row.lubangTanam.hariIni"
+                    :sd-hari-ini="row.lubangTanam.sdHariIni"
+                    :persentase="row.lubangTanam.persentase"
+                  />
+                </td>
+                <td class="data-grid-cell">
+                  <ProgressItem
+                    title="Mempupuk Lubang"
+                    :rencana="row.mempupukLobang.rencana"
+                    :hari-ini="row.mempupukLobang.hariIni"
+                    :sd-hari-ini="row.mempupukLobang.sdHariIni"
+                    :persentase="row.mempupukLobang.persentase"
+                  />
+                </td>
+                <td class="data-grid-cell">
+                  <ProgressItem
+                    title="Menanam KS"
+                    :rencana="row.menanamKS.rencana"
+                    :hari-ini="row.menanamKS.hariIni"
+                    :sd-hari-ini="row.menanamKS.sdHariIni"
+                    :persentase="row.menanamKS.persentase"
+                  />
+                </td>
+                <td class="data-grid-cell">
+                  <ProgressItem
+                    title="Progress Overall"
+                    :rencana="row.totalLC.rencana"
+                    :hari-ini="row.totalLC.realisasi"
+                    :sd-hari-ini="row.totalLC.realisasi"
+                    :persentase="row.totalLC.persentase"
+                  />
+                </td>
+                <td class="data-grid-cell">
+                  <div class="flex items-center">
+                    <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <span>{{ formatDate(row.tanggalSPPBJ) }}</span>
+                  </div>
+                </td>
+                <td class="data-grid-cell">
+                  <div class="flex items-center">
+                    <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>{{ row.jumlahHariKerja }} hari</span>
+                  </div>
+                </td>
+              </tr>
+            </template>
           </template>
         </tbody>
       </table>
@@ -256,6 +274,10 @@ export default {
       currentPage: 1,
       itemsPerPage: 10,
       customItemsPerPage: 10,
+      // State untuk melacak grup yang diminimalkan
+      minimizedGroups: {},
+      // State untuk melihat apakah semua grup diminimalkan
+      allGroupsMinimized: false
     };
   },
   computed: {
@@ -637,11 +659,49 @@ export default {
         this.itemsPerPage = this.customItemsPerPage;
         this.resetPagination();
       }
-    }
+    },
+  // Metode untuk toggle minimize/maximize grup
+  toggleGroup(groupName) {
+    // Menggunakan spread operator untuk mempertahankan reaktivitas di Vue 3
+    this.minimizedGroups = {
+      ...this.minimizedGroups,
+      [groupName]: !this.minimizedGroups[groupName]
+    };
   },
+  
+  // Metode untuk minimize semua grup
+  minimizeAllGroups() {
+    const groupNames = Object.keys(this.groupedData);
+    const newMinimizedGroups = {};
+    
+    groupNames.forEach(groupName => {
+      newMinimizedGroups[groupName] = true;
+    });
+    
+    this.minimizedGroups = newMinimizedGroups;
+    this.allGroupsMinimized = true;
+  },
+  
+  // Metode untuk expand semua grup
+  expandAllGroups() {
+    const groupNames = Object.keys(this.groupedData);
+    const newMinimizedGroups = {};
+    
+    groupNames.forEach(groupName => {
+      newMinimizedGroups[groupName] = false;
+    });
+    
+    this.minimizedGroups = newMinimizedGroups;
+    this.allGroupsMinimized = false;
+  }
+},
   watch: {
     filteredData() {
       this.resetPagination();
+      
+      // Reset state minimizedGroups ketika data berubah
+      this.minimizedGroups = {};
+      this.allGroupsMinimized = false;
     },
     itemsPerPage(newVal) {
       if (newVal !== 'custom' && newVal !== 'all') {
@@ -651,3 +711,34 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+/* Tambahkan style untuk transisi dan cursor pointer */
+.kebun-header {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.kebun-header:hover {
+  background-color: rgba(243, 244, 246, 0.5);
+}
+
+/* Animasi untuk ikon panah */
+.transform {
+  transition: transform 0.2s ease-in-out;
+}
+
+.rotate-90 {
+  transform: rotate(90deg);
+}
+
+/* Style untuk status indikator */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+</style>
