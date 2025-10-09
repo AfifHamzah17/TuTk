@@ -1,13 +1,19 @@
 <template>
-  <div class="relative overflow-hidden rounded-2xl shadow-xl">
+  <div class="carousel-card">
     <carousel :items-to-show="1" :wrap-around="true" :autoplay="4000" :transition="500">
       <slide v-for="slide in slides" :key="slide.id">
         <div class="carousel__item relative">
-          <img :src="slide.image" :alt="slide.title" class="w-full h-64 md:h-96 object-cover">
-          <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
-            <div class="p-6 md:p-8 text-white">
-              <h2 class="text-2xl md:text-3xl font-bold mb-2">{{ slide.title }}</h2>
-              <p class="text-sm md:text-base max-w-2xl">{{ slide.description }}</p>
+          <div class="image-container p-4">
+            <img 
+              :src="slide.image" 
+              :alt="slide.title" 
+              class="carousel-image"
+            >
+          </div>
+          <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end rounded-2xl">
+            <div class="p-6 md:p-8">
+              <h2 class="text-2xl md:text-3xl font-bold mb-2 text-white drop-shadow-lg">{{ slide.title }}</h2>
+              <p class="text-sm md:text-base max-w-2xl text-white drop-shadow-md">{{ slide.description }}</p>
             </div>
           </div>
         </div>
@@ -61,12 +67,53 @@ export default {
 </script>
 
 <style scoped>
+.carousel-card {
+  background: linear-gradient(to bottom right, #16a34a, #166534);
+  border-radius: 16px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
 .carousel__item {
   position: relative;
 }
 
 .carousel__slide {
   padding: 0;
+}
+
+.image-container {
+  padding: 1rem;
+  transition: all 0.3s ease;
+}
+
+/* Gaya khusus untuk gambar carousel */
+.carousel-image {
+  width: 100%;
+  height: 16rem; /* h-64 */
+  border-radius: 1rem; /* rounded-2xl */
+  object-fit: cover;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); /* shadow-2xl */
+  transition: transform 0.5s ease, box-shadow 0.3s ease;
+}
+
+/* Efek hover pada gambar */
+.carousel-image:hover {
+  transform: scale(1.05);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+}
+
+/* Efek hover pada container gambar */
+.image-container:hover {
+  transform: translateY(-5px);
+}
+
+/* Responsive untuk ukuran gambar */
+@media (min-width: 768px) {
+  .carousel-image {
+    height: 24rem; /* h-96 */
+  }
 }
 
 /* Style untuk navigasi dan pagination */
@@ -86,5 +133,16 @@ export default {
 :deep(.carousel__prev:hover),
 :deep(.carousel__next:hover) {
   @apply bg-white/30;
+}
+
+/* Style untuk title dan description */
+.carousel__item h2 {
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.carousel__item p {
+  color: white;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
 }
 </style>
