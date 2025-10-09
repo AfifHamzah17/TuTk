@@ -89,8 +89,8 @@
         />
       </div>
 
-      <!-- Data Grid -->
-      <DataGrid 
+      <!-- Data Grid - Menggunakan DataGridTK -->
+      <DataGridTK 
         :rawData="rawData" 
         :filters="currentFilters"
         @refresh="refreshData"
@@ -104,7 +104,7 @@ import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { fetchSheetDataByGid } from '../services/sheetsService';
 import { calculateDaysDifference } from '../utils/dateUtils';
 import StatCard from '../components/StatCard.vue';
-import DataGrid from '../components/DataGrid.vue';
+import DataGridTK from '../components/DataGridTK.vue';  // Mengubah import ke DataGridTK
 import BarChart from '../components/BarChart.vue';
 import PieChart from '../components/PieChart.vue';
 import LineChart from '../components/LineChart.vue';
@@ -116,7 +116,7 @@ export default {
   name: 'TanamanKonversi',
   components: {
     StatCard,
-    DataGrid,
+    DataGridTK,  // Mengubah komponen yang digunakan
     BarChart,
     PieChart,
     LineChart,
@@ -264,7 +264,7 @@ export default {
           { "Kebun": "KEBUN MERBAU SELATAN", "Kodering": "1KMS" },
           { "Kebun": "KEBUN SEI DADAP", "Kodering": "1KDP" },
           { "Kebun": "KEBUN PULAU MANDI", "Kodering": "1KPM" },
-          { "Kebun": "1KAM", "Kodering": "1KAM" },
+          { "Kebun": "KEBUN AMBALUTU", "Kodering": "1KAM" },
           { "Kebun": "KEBUN SEI SILAU", "Kodering": "1KSL" },
           { "Kebun": "KEBUN HUTA PADANG", "Kodering": "1KHP" },
           { "Kebun": "KEBUN BANDAR SELAMAT", "Kodering": "1KBS" },
@@ -312,14 +312,14 @@ export default {
     const calculateProgressTK = (cells) => {
       // Aktivitas yang relevan untuk progress TK (sesuaikan dengan kolom di sheet Tanaman Konversi)
       const activities = [
-        { rencana: cells[5], realisasi: cells[7] },      // Ripper (kolom 5 dan 7)
-        { rencana: cells[9], realisasi: cells[11] },     // Luku (kolom 9 dan 11)
-        { rencana: cells[13], realisasi: cells[15] },    // Tumbang/Chipping (kolom 13 dan 15)
-        { rencana: cells[17], realisasi: cells[19] },    // Pembuatan Parit (kolom 17 dan 19)
-        { rencana: cells[21], realisasi: cells[23] },    // Menanam Mucuna (kolom 21 dan 23)
-        { rencana: cells[25], realisasi: cells[27] },    // Lubang Tanam (kolom 25 dan 27)
-        { rencana: cells[29], realisasi: cells[31] },    // Mempupuk Lobang (kolom 29 dan 31)
-        { rencana: cells[33], realisasi: cells[35] }     // Menanam KS (kolom 33 dan 35)
+        { rencana: cells[5], realisasi: cells[7] },      // Membongkar Tunggul (kolom 5 dan 7)
+        { rencana: cells[9], realisasi: cells[11] },     // Merumpuk Tunggul (kolom 9 dan 11)
+        { rencana: cells[13], realisasi: cells[15] },    // Ripper (kolom 13 dan 15)
+        { rencana: cells[17], realisasi: cells[19] },    // Luku (kolom 17 dan 19)
+        { rencana: cells[21], realisasi: cells[23] },    // Pembuatan Parit (kolom 21 dan 23)
+        { rencana: cells[25], realisasi: cells[27] },    // Menanam Mucuna (kolom 25 dan 27)
+        { rencana: cells[29], realisasi: cells[31] },    // Lubang Tanam (kolom 29 dan 31)
+        { rencana: cells[32], realisasi: cells[34] }     // Menanam KS (kolom 32 dan 34)
       ];
 
       let totalRencana = 0;
@@ -339,14 +339,14 @@ export default {
     // Helper function to get realized area
     const getRealizedArea = (cells) => {
       const activities = [
-        { realisasi: cells[7] },   // Ripper
-        { realisasi: cells[11] },  // Luku
-        { realisasi: cells[15] },  // Tumbang/Chipping
-        { realisasi: cells[19] },  // Pembuatan Parit
-        { realisasi: cells[23] },  // Menanam Mucuna
-        { realisasi: cells[27] },  // Lubang Tanam
-        { realisasi: cells[31] },  // Mempupuk Lobang
-        { realisasi: cells[35] }   // Menanam KS
+        { realisasi: cells[7] },   // Membongkar Tunggul
+        { realisasi: cells[11] },  // Merumpuk Tunggul
+        { realisasi: cells[15] },  // Ripper
+        { realisasi: cells[19] },  // Luku
+        { realisasi: cells[23] },  // Pembuatan Parit
+        { realisasi: cells[27] },  // Menanam Mucuna
+        { realisasi: cells[31] },  // Lubang Tanam
+        { realisasi: cells[34] }   // Menanam KS
       ];
 
       let totalRealisasi = 0;
@@ -464,15 +464,15 @@ export default {
         
         // Hanya proses jika ada kebun dan AFD
         if (currentKebun && afdName) {
-          const tanggalSPPBJ = cells[35] ? (cells[35].f || cells[35].v) : '';
+          const tanggalSPPBJ = cells[39] ? (cells[39].f || cells[39].v) : '';
           const jumlahHariKerja = calculateDaysDifference(tanggalSPPBJ);
           
           result.push({
             kebun: currentKebun,
             afd: afdName,
             luasPaket: cells[4] ? cells[4].v : 0,
-            lcRencana: cells[32] ? cells[32].v : 0,
-            lcRealisasi: cells[33] ? cells[33].v : 0,
+            lcRencana: cells[36] ? cells[36].v : 0,
+            lcRealisasi: cells[37] ? cells[37].v : 0,
             tanggalSPPBJ: tanggalSPPBJ,
             jumlahHariKerja: jumlahHariKerja
           });
@@ -1529,15 +1529,14 @@ export default {
       
       // Definisikan semua aktivitas yang akan ditampilkan di radar chart
       const activityLabels = [
-        'Pembuatan Parit (Mtr)',
-        'Pembuatan Jalan (Mtr)',
-        'Pembuatan Teras (Mtr)',
-        'Ripping (ha)',
-        'Luku (ha)',
-        'Tumbang/Chipping (ha)',
-        'Menanam Mucuna (ha)',
-        'Lubang Tanam KS (ha)',
-        'Menanam KS (ha)'
+        'Membongkar Tunggul',
+        'Merumpuk Tunggul',
+        'Ripping',
+        'Luku',
+        'Pembuatan Parit',
+        'Menanam Mucuna',
+        'Lubang Tanam',
+        'Menanam KS'
       ];
       
       // Array untuk menyimpan semua chart data
@@ -1598,49 +1597,44 @@ export default {
           // Aktivitas-aktivitas dengan indeks kolom yang sesuai
           const activities = [
             { 
-              name: 'Pembuatan Parit (Mtr)', 
-              rencana: cells[17] ? cells[17].v : 0, 
-              realisasi: cells[19] ? cells[19].v : 0 
-            },
-            { 
-              name: 'Pembuatan Jalan (Mtr)', 
-              rencana: cells[37] ? cells[37].v : 0, 
-              realisasi: cells[39] ? cells[39].v : 0 
-            },
-            { 
-              name: 'Pembuatan Teras (Mtr)', 
-              rencana: cells[41] ? cells[41].v : 0, 
-              realisasi: cells[43] ? cells[43].v : 0 
-            },
-            { 
-              name: 'Ripping (ha)', 
+              name: 'Membongkar Tunggul', 
               rencana: cells[5] ? cells[5].v : 0, 
               realisasi: cells[7] ? cells[7].v : 0 
             },
             { 
-              name: 'Luku (ha)', 
+              name: 'Merumpuk Tunggul', 
               rencana: cells[9] ? cells[9].v : 0, 
               realisasi: cells[11] ? cells[11].v : 0 
             },
             { 
-              name: 'Tumbang/Chipping (ha)', 
+              name: 'Ripping', 
               rencana: cells[13] ? cells[13].v : 0, 
               realisasi: cells[15] ? cells[15].v : 0 
             },
             { 
-              name: 'Menanam Mucuna (ha)', 
+              name: 'Luku', 
+              rencana: cells[17] ? cells[17].v : 0, 
+              realisasi: cells[19] ? cells[19].v : 0 
+            },
+            { 
+              name: 'Pembuatan Parit', 
               rencana: cells[21] ? cells[21].v : 0, 
               realisasi: cells[23] ? cells[23].v : 0 
             },
             { 
-              name: 'Lubang Tanam KS (ha)', 
+              name: 'Menanam Mucuna', 
               rencana: cells[25] ? cells[25].v : 0, 
               realisasi: cells[27] ? cells[27].v : 0 
             },
             { 
-              name: 'Menanam KS (ha)', 
-              rencana: cells[33] ? cells[33].v : 0, 
-              realisasi: cells[35] ? cells[35].v : 0 
+              name: 'Lubang Tanam', 
+              rencana: cells[29] ? cells[29].v : 0, 
+              realisasi: cells[31] ? cells[31].v : 0 
+            },
+            { 
+              name: 'Menanam KS', 
+              rencana: cells[32] ? cells[32].v : 0, 
+              realisasi: cells[34] ? cells[34].v : 0 
             }
           ];
           

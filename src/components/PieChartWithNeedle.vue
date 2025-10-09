@@ -479,14 +479,24 @@ export default {
   align-items: center;
 }
 
+/* PERUBAHAN: Memperbaiki chart title agar bisa multi-line */
 .chart-title {
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 10px;
   text-align: center;
-  white-space: nowrap;
+  /* Mengizinkan pembungkusan teks */
+  white-space: normal;
+  /* Menentukan maksimal tinggi untuk title */
+  max-height: 40px;
+  /* Mengatur overflow */
   overflow: hidden;
-  text-overflow: ellipsis;
+  /* Mengatur line height untuk konsistensi */
+  line-height: 1.2;
+  /* Menentukan jumlah maksimal baris */
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
   width: 100%;
 }
 
