@@ -104,7 +104,7 @@ import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { fetchSheetDataByGid } from '../services/sheetsService';
 import { calculateDaysDifference } from '../utils/dateUtils';
 import StatCard from '../components/StatCard.vue';
-import DataGridTK from '../components/DataGridTK.vue';  // Mengubah import ke DataGridTK
+import DataGridTK from '../components/DataGridTK.vue';  
 import BarChart from '../components/BarChart.vue';
 import PieChart from '../components/PieChart.vue';
 import LineChart from '../components/LineChart.vue';
@@ -315,11 +315,11 @@ export default {
         { rencana: cells[5], realisasi: cells[7] },      // Membongkar Tunggul (kolom 5 dan 7)
         { rencana: cells[9], realisasi: cells[11] },     // Merumpuk Tunggul (kolom 9 dan 11)
         { rencana: cells[13], realisasi: cells[15] },    // Ripper (kolom 13 dan 15)
-        { rencana: cells[17], realisasi: cells[19] },    // Luku (kolom 17 dan 19)
-        { rencana: cells[21], realisasi: cells[23] },    // Pembuatan Parit (kolom 21 dan 23)
+        { rencana: cells[17], realisasi: cells[19] },    // Luku (kolom 17 dan 19)   // Pembuatan Parit (kolom 21 dan 23)
         { rencana: cells[25], realisasi: cells[27] },    // Menanam Mucuna (kolom 25 dan 27)
         { rencana: cells[29], realisasi: cells[31] },    // Lubang Tanam (kolom 29 dan 31)
-        { rencana: cells[32], realisasi: cells[34] }     // Menanam KS (kolom 32 dan 34)
+        { rencana: cells[33], realisasi: cells[35] },     // Menanam KS (kolom 32 dan 34)
+        { rencana: cells[37], realisasi: cells[39] },     // Menanam KS (kolom 32 dan 34)
       ];
 
       let totalRencana = 0;
@@ -1519,196 +1519,214 @@ export default {
       };
     });
     
-    // Data untuk Radar Chart
-    const radarChartData = computed(() => {
-      if (!rawData.value || !rawData.value.table || !rawData.value.table.rows) {
-        return [];
+// Data untuk Radar Chart
+const radarChartData = computed(() => {
+  if (!rawData.value || !rawData.value.table || !rawData.value.table.rows) {
+    return [];
+  }
+  
+  const rows = rawData.value.table.rows;
+  
+  // Definisikan semua aktivitas yang akan ditampilkan di radar chart
+  const activityLabels = [
+    'Membongkar Tunggul',
+    'Merumpuk Tunggul',
+    'Ripping',
+    'Luku',
+    'Pembuatan Parit',
+    'Menanam Mucuna',
+    'Lubang Tanam',
+    'Menanam KS'
+  ];
+  
+  // Array untuk menyimpan semua chart data
+  const chartsData = [];
+  let currentKebun = null;
+  
+  // Proses data untuk mendapatkan progress per aktivitas
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const cells = row.c;
+    
+    if (!cells || cells.length === 0) continue;
+    
+    // Skip baris header, jumlah, total
+    if (cells[1] && (cells[1].v === 'Kebun' || cells[0] && (cells[0].v === 'Jumlah' || cells[0].v === 'Total'))) continue;
+    
+    const kebunName = cells[1] ? cells[1].v : '';
+    const afdName = cells[3] ? cells[3].v : '';
+    const paketName = cells[2] ? cells[2].v : '';
+    
+    // Skip baris yang tidak memiliki kebun dan AFD
+    if (!kebunName && !afdName) continue;
+    
+    // Set currentKebun jika ada
+    if (kebunName) {
+      currentKebun = kebunName;
+    }
+    
+    // Skip baris yang tidak memiliki AFD (kecuali baris nama kebun)
+    if (!afdName && !kebunName) continue;
+    
+    // Hanya proses jika ada kebun dan AFD
+    if (currentKebun && afdName) {
+      // Apply filters using helper function
+      if (!shouldIncludeRow(currentKebun, afdName, paketName)) continue;
+      
+      // Buat label berdasarkan filter yang aktif
+      let label = '';
+      
+      if (filterKebun.value && filterPaket.value) {
+        label = afdName;
+      } else if (filterPaket.value && !filterKebun.value) {
+        const kodering = getKodering(currentKebun);
+        label = `${kodering} - AFD ${afdName}`;
+      } else if (filterKebun.value && !filterPaket.value) {
+        label = `AFD ${afdName} - ${paketName}`;
+      } else {
+        const kodering = getKodering(currentKebun);
+        label = `${kodering} - AFD ${afdName} - ${paketName}`;
       }
       
-      const rows = rawData.value.table.rows;
+      // Fungsi untuk menghitung persentase
+      const calculatePercentage = (realisasi, rencana) => {
+        if (!rencana || rencana === 0) return 0;
+        return (realisasi / rencana) * 100;
+      };
       
-      // Definisikan semua aktivitas yang akan ditampilkan di radar chart
-      const activityLabels = [
-        'Membongkar Tunggul',
-        'Merumpuk Tunggul',
-        'Ripping',
-        'Luku',
-        'Pembuatan Parit',
-        'Menanam Mucuna',
-        'Lubang Tanam',
-        'Menanam KS'
+      // Aktivitas-aktivitas dengan indeks kolom yang sesuai
+      const activities = [
+        { 
+          name: 'Membongkar Tunggul', 
+          rencana: cells[5] ? cells[5].v : 0, 
+          realisasi: cells[7] ? cells[7].v : 0 
+        },
+        { 
+          name: 'Merumpuk Tunggul', 
+          rencana: cells[9] ? cells[9].v : 0, 
+          realisasi: cells[11] ? cells[11].v : 0 
+        },
+        { 
+          name: 'Ripping', 
+          rencana: cells[13] ? cells[13].v : 0, 
+          realisasi: cells[15] ? cells[15].v : 0 
+        },
+        { 
+          name: 'Luku', 
+          rencana: cells[17] ? cells[17].v : 0, 
+          realisasi: cells[19] ? cells[19].v : 0 
+        },
+        { 
+          name: 'Pembuatan Parit', 
+          rencana: cells[21] ? cells[21].v : 0, 
+          realisasi: cells[23] ? cells[23].v : 0 
+        },
+        { 
+          name: 'Menanam Mucuna', 
+          rencana: cells[25] ? cells[25].v : 0, 
+          realisasi: cells[27] ? cells[27].v : 0 
+        },
+        { 
+          name: 'Lubang Tanam', 
+          rencana: cells[29] ? cells[29].v : 0, 
+          realisasi: cells[31] ? cells[31].v : 0 
+        },
+        { 
+          name: 'Menanam KS', 
+          rencana: cells[32] ? cells[32].v : 0, 
+          realisasi: cells[34] ? cells[34].v : 0 
+        }
       ];
       
-      // Array untuk menyimpan semua chart data
-      const chartsData = [];
-      let currentKebun = null;
+      // Array untuk menyimpan data aktivitas (persentase)
+      const activityData = [];
+      // Array baru untuk menyimpan detail (rencana & realisasi)
+      const detailInfo = [];
       
-      // Proses data untuk mendapatkan progress per aktivitas
-      for (let i = 0; i < rows.length; i++) {
-        const row = rows[i];
-        const cells = row.c;
+      // Proses setiap aktivitas
+      activities.forEach(activity => {
+        const rencana = parseFloat(activity.rencana) || 0;
+        const realisasi = parseFloat(activity.realisasi) || 0;
         
-        if (!cells || cells.length === 0) continue;
+        // Hitung progress = (realisasi / rencana) * 100
+        let persentase = calculatePercentage(realisasi, rencana);
+        persentase = Math.min(persentase, 100);
         
-        // Skip baris header, jumlah, total
-        if (cells[1] && (cells[1].v === 'Kebun' || cells[0] && (cells[0].v === 'Jumlah' || cells[0].v === 'Total'))) continue;
+        activityData.push(persentase);
         
-        const kebunName = cells[1] ? cells[1].v : '';
-        const afdName = cells[3] ? cells[3].v : '';
-        const paketName = cells[2] ? cells[2].v : '';
-        
-        // Skip baris yang tidak memiliki kebun dan AFD
-        if (!kebunName && !afdName) continue;
-        
-        // Set currentKebun jika ada
-        if (kebunName) {
-          currentKebun = kebunName;
-        }
-        
-        // Skip baris yang tidak memiliki AFD (kecuali baris nama kebun)
-        if (!afdName && !kebunName) continue;
-        
-        // Hanya proses jika ada kebun dan AFD
-        if (currentKebun && afdName) {
-          // Apply filters using helper function
-          if (!shouldIncludeRow(currentKebun, afdName, paketName)) continue;
-          
-          // Buat label berdasarkan filter yang aktif
-          let label = '';
-          
-          if (filterKebun.value && filterPaket.value) {
-            label = afdName;
-          } else if (filterPaket.value && !filterKebun.value) {
-            const kodering = getKodering(currentKebun);
-            label = `${kodering} - AFD ${afdName}`;
-          } else if (filterKebun.value && !filterPaket.value) {
-            label = `AFD ${afdName} - ${paketName}`;
-          } else {
-            const kodering = getKodering(currentKebun);
-            label = `${kodering} - AFD ${afdName} - ${paketName}`;
-          }
-          
-          // Fungsi untuk menghitung persentase
-          const calculatePercentage = (realisasi, rencana) => {
-            if (!rencana || rencana === 0) return 0;
-            return (realisasi / rencana) * 100;
-          };
-          
-          // Aktivitas-aktivitas dengan indeks kolom yang sesuai
-          const activities = [
-            { 
-              name: 'Membongkar Tunggul', 
-              rencana: cells[5] ? cells[5].v : 0, 
-              realisasi: cells[7] ? cells[7].v : 0 
-            },
-            { 
-              name: 'Merumpuk Tunggul', 
-              rencana: cells[9] ? cells[9].v : 0, 
-              realisasi: cells[11] ? cells[11].v : 0 
-            },
-            { 
-              name: 'Ripping', 
-              rencana: cells[13] ? cells[13].v : 0, 
-              realisasi: cells[15] ? cells[15].v : 0 
-            },
-            { 
-              name: 'Luku', 
-              rencana: cells[17] ? cells[17].v : 0, 
-              realisasi: cells[19] ? cells[19].v : 0 
-            },
-            { 
-              name: 'Pembuatan Parit', 
-              rencana: cells[21] ? cells[21].v : 0, 
-              realisasi: cells[23] ? cells[23].v : 0 
-            },
-            { 
-              name: 'Menanam Mucuna', 
-              rencana: cells[25] ? cells[25].v : 0, 
-              realisasi: cells[27] ? cells[27].v : 0 
-            },
-            { 
-              name: 'Lubang Tanam', 
-              rencana: cells[29] ? cells[29].v : 0, 
-              realisasi: cells[31] ? cells[31].v : 0 
-            },
-            { 
-              name: 'Menanam KS', 
-              rencana: cells[32] ? cells[32].v : 0, 
-              realisasi: cells[34] ? cells[34].v : 0 
-            }
-          ];
-          
-          // Array untuk menyimpan data aktivitas (persentase)
-          const activityData = [];
-          // Array baru untuk menyimpan detail (rencana & realisasi)
-          const detailInfo = [];
-          
-          // Proses setiap aktivitas
-          activities.forEach(activity => {
-            const rencana = parseFloat(activity.rencana) || 0;
-            const realisasi = parseFloat(activity.realisasi) || 0;
-            
-            // Hitung progress = (realisasi / rencana) * 100
-            let persentase = calculatePercentage(realisasi, rencana);
-            persentase = Math.min(persentase, 100);
-            
-            activityData.push(persentase);
-            
-            // Simpan detail untuk tooltip
-            detailInfo.push({
-              rencana: rencana,
-              realisasi: realisasi
-            });
-          });
-          
-          // Buat chart data untuk vendor/kebun/afdeling ini
-          chartsData.push({
-            title: label,
-            data: {
-              labels: activityLabels,
-              datasets: [{
-                label: 'Progress (%)',
-                data: activityData,
-                // TAMBAHKAN detailInfo KE DALAM DATASET
-                detailInfo: detailInfo, 
-                backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                borderColor: 'rgba(59, 130, 246, 1)',
-                pointBackgroundColor: 'rgba(59, 130, 246, 1)',
-                pointBorderColor: '#fff',
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: 'rgba(59, 130, 246, 1)'
-              }]
-            },
-            options: {
-              scales: {
-                r: {
-                  beginAtZero: true,
-                  max: 100,
-                  ticks: {
-                    stepSize: 20,
-                    callback: function(value) {
-                      return value + '%';
-                    }
-                  }
+        // Simpan detail untuk tooltip
+        detailInfo.push({
+          rencana: rencana,
+          realisasi: realisasi
+        });
+      });
+      
+      // Buat chart data untuk vendor/kebun/afdeling ini
+      chartsData.push({
+        title: label,
+        data: {
+          labels: activityLabels,
+          datasets: [{
+            label: 'Progress (%)',
+            data: activityData,
+            // TAMBAHKAN detailInfo KE DALAM DATASET
+            detailInfo: detailInfo, 
+            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+            borderColor: 'rgba(59, 130, 246, 1)',
+            pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgba(59, 130, 246, 1)'
+          }]
+        },
+        options: {
+          scales: {
+            r: {
+              beginAtZero: true,
+              max: 100,
+              ticks: {
+                stepSize: 20,
+                callback: function(value) {
+                  return value + '%';
                 }
               },
-              plugins: {
-                tooltip: {
-                  callbacks: {
-                    label: function(context) {
-                      return `${context.label}: ${context.parsed.r.toFixed(2)}%`;
-                    }
-                  }
+              pointLabels: {
+                font: {
+                  size: 12,
+                  weight: 'bold'
                 }
               }
             }
-          });
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const dataset = context.dataset;
+                  const dataIndex = context.dataIndex;
+                  const label = context.label || '';
+                  const value = context.parsed.r || 0;
+                  
+                  // Get detail info if available
+                  let detailText = '';
+                  if (dataset.detailInfo && dataset.detailInfo[dataIndex]) {
+                    const detail = dataset.detailInfo[dataIndex];
+                    detailText = ` (Rencana: ${detail.rencana}, Realisasi: ${detail.realisasi})`;
+                  }
+                  
+                  return `${label}: ${value.toFixed(2)}%${detailText}`;
+                }
+              }
+            }
+          }
         }
-      }
-      
-      console.log("Radar Chart Data:", chartsData);
-      return chartsData;
-    });
+      });
+    }
+  }
+  
+  console.log("Radar Chart Data:", chartsData);
+  return chartsData;
+});
     
     // Data for Pie Chart with Needle - similar to bar chart data
     const pieWithNeedleChartData = computed(() => {

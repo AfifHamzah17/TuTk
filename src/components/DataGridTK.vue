@@ -31,6 +31,7 @@
             <th class="w-64">Luku</th>
             <th class="w-64">Menanam Mucuna</th>
             <th class="w-64">Lubang Tanam</th>
+            <th class="w-64">Menutup Lubang Tanam</th>
             <th class="w-64">Menanam KS</th>
             <th class="w-64">Progress overall</th>
             <th class="w-40">Tanggal SPPBJ</th>
@@ -41,7 +42,7 @@
           <template v-for="(group, groupName) in paginatedGroupedData" :key="groupName">
             <!-- Header Group Kebun -->
             <tr class="kebun-group">
-              <td colspan="16" class="kebun-header px-6 py-3 cursor-pointer" @click="toggleGroup(groupName)">
+              <td colspan="17" class="kebun-header px-6 py-3 cursor-pointer" @click="toggleGroup(groupName)">
                 <div class="flex items-center">
                   <!-- Ikon untuk toggle minimize/maximize -->
                   <svg 
@@ -140,6 +141,15 @@
                     :hari-ini="row.lubangTanam.hariIni"
                     :sd-hari-ini="row.lubangTanam.sdHariIni"
                     :persentase="row.lubangTanam.persentase"
+                  />
+                </td>
+                <td class="data-grid-cell">
+                  <ProgressItem
+                    title="Menutup Lubang Tanam"
+                    :rencana="row.menutupLubangTanam.rencana"
+                    :hari-ini="row.menutupLubangTanam.hariIni"
+                    :sd-hari-ini="row.menutupLubangTanam.sdHariIni"
+                    :persentase="row.menutupLubangTanam.persentase"
                   />
                 </td>
                 <td class="data-grid-cell">
@@ -353,19 +363,25 @@ export default {
         const MelubangTanamSdHariIni = cells[31] ? cells[31].v : 0;
         const MelubangTanamPersentase = calculatePercentage(MelubangTanamSdHariIni, MelubangTanamRencana);
         
+        // Menutup Lubang Tanam
+        const MenutupLubangTanamRencana = cells[33] ? cells[33].v : 0;
+        const MenutupLubangTanamHariIni = cells[34] ? cells[34].v : 0;
+        const MenutupLubangTanamSdHariIni = cells[35] ? cells[35].v : 0;
+        const MenutupLubangTanamPersentase = calculatePercentage(MenutupLubangTanamSdHariIni, MenutupLubangTanamRencana);
+
         // Menanam KS
-        const MenanamKSRencana = cells[32] ? cells[32].v : 0;
-        const MenanamKSHariIni = cells[33] ? cells[33].v : 0;
-        const MenanamKSSdHariIni = cells[34] ? cells[34].v : 0;
+        const MenanamKSRencana = cells[37] ? cells[37].v : 0;
+        const MenanamKSHariIni = cells[38] ? cells[38].v : 0;
+        const MenanamKSSdHariIni = cells[39] ? cells[39].v : 0;
         const MenanamKSPersentase = calculatePercentage(MenanamKSSdHariIni, MenanamKSRencana);
         
         // Total LC
-        const lcRencana = cells[36] ? cells[36].v : 0;
-        const lcRealisasi = cells[37] ? cells[37].v : 0;
+        const lcRencana = cells[41] ? cells[41].v : 0;
+        const lcRealisasi = cells[42] ? cells[42].v : 0;
         const lcPersentase = calculatePercentage(lcRealisasi, lcRencana);
         
         // Tanggal SPPBJ
-        const tanggalSPPBJ = cells[39] ? (cells[39].f || cells[39].v) : '';
+        const tanggalSPPBJ = cells[44] ? (cells[44].f || cells[44].v) : '';
         
         // Hitung jumlah hari kerja secara otomatis
         let jumlahHariKerja = 0;
@@ -423,6 +439,12 @@ export default {
               hariIni: MelubangTanamHariIni,
               sdHariIni: MelubangTanamSdHariIni,
               persentase: MelubangTanamPersentase
+            },
+            menutupLubangTanam: {
+              rencana: MenutupLubangTanamRencana,
+              hariIni: MenutupLubangTanamHariIni,
+              sdHariIni: MenutupLubangTanamSdHariIni,
+              persentase: MenutupLubangTanamPersentase
             },
             menanamKS: {
               rencana: MenanamKSRencana,
@@ -482,6 +504,8 @@ export default {
             row.menanamMucuna.sdHariIni.toString(),
             row.lubangTanam.rencana.toString(),
             row.lubangTanam.sdHariIni.toString(),
+            row.menutupLubangTanam.rencana.toString(),
+            row.menutupLubangTanam.sdHariIni.toString(),
             row.menanamKS.rencana.toString(),
             row.menanamKS.sdHariIni.toString(),
             row.totalLC.rencana.toString(),
