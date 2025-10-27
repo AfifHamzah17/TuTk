@@ -368,7 +368,7 @@ export default {
         const MenutupLubangTanamHariIni = cells[34] ? cells[34].v : 0;
         const MenutupLubangTanamSdHariIni = cells[35] ? cells[35].v : 0;
         const MenutupLubangTanamPersentase = calculatePercentage(MenutupLubangTanamSdHariIni, MenutupLubangTanamRencana);
-
+        console.log(MenutupLubangTanamSdHariIni);
         // Menanam KS
         const MenanamKSRencana = cells[37] ? cells[37].v : 0;
         const MenanamKSHariIni = cells[38] ? cells[38].v : 0;

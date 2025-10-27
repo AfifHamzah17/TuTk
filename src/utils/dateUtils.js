@@ -43,6 +43,54 @@ export const calculateDaysDifference = (dateString) => {
 };
 
 /**
+ * Menghitung selisih hari antara tanggal yang diberikan dengan hari ini
+ * dengan menampilkan tanda (+) untuk tanggal di masa depan dan (-) untuk tanggal yang sudah lewat
+ * @param {string} dateString - Tanggal dalam format M/D/YYYY atau MM/DD/YYYY
+ * @returns {string} - Selisih hari dengan tanda (+) atau (-)
+ */
+export const calculateDaysDifferenceWithSign = (dateString) => {
+  if (!dateString) return '-';
+  
+  try {
+    // Parse tanggal dari format M/D/YYYY atau MM/DD/YYYY
+    const parts = dateString.split('/');
+    if (parts.length !== 3) return '-';
+    
+    // Format M/D/YYYY atau MM/DD/YYYY
+    const month = parseInt(parts[0], 10) - 1; // Bulan dimulai dari 0 (Januari=0)
+    const day = parseInt(parts[1], 10);
+    const year = parseInt(parts[2], 10);
+    
+    // Validasi komponen tanggal
+    if (isNaN(day) || isNaN(month) || isNaN(year)) return '-';
+    
+    const date = new Date(year, month, day);
+    const today = new Date();
+    
+    // Reset time untuk perbandingan yang akurat
+    today.setHours(0, 0, 0, 0);
+    date.setHours(0, 0, 0, 0);
+    
+    // Hitung selisih waktu dalam milidetik
+    const diffTime = today - date;
+    
+    // Konversi ke hari
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    // Jika hasilnya negatif (tanggal di masa depan), tambahkan tanda +
+    if (diffDays < 0) {
+      return `+${Math.abs(diffDays)} hari`;
+    } else {
+      // Jika hasilnya positif atau nol (tanggal sudah lewat atau hari ini), tambahkan tanda -
+      return `-${diffDays} hari`;
+    }
+  } catch (error) {
+    console.error('Error calculating days difference with sign:', error);
+    return '-';
+  }
+};
+
+/**
  * Format tanggal dari M/D/YYYY atau MM/DD/YYYY ke format yang lebih mudah dibaca
  * @param {string} dateString - Tanggal dalam format M/D/YYYY atau MM/DD/YYYY
  * @returns {string} - Tanggal yang diformat

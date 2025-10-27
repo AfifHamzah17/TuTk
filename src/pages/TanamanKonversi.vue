@@ -37,6 +37,53 @@
         />
       </div>
 
+      <!-- FITUR RANKING BARU -->
+      <div>
+        <!-- Toggle Button -->
+        <button @click="toggleRanking" class="toggle-button">
+          {{ rankingVisible ? 'Sembunyikan' : 'Tampilkan' }} Ranking
+        </button>
+
+        <div v-show="rankingVisible" class="grid grid-cols-1 lg:grid-cols-1 gap-6 mb-8">
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-bold">Ranking Progress Harian</h2>
+              <div class="flex space-x-2">
+                <button 
+                  @click="rankingType = 'kebun'" 
+                  :class="rankingType === 'kebun' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'"
+                  class="px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                >
+                  Per Kebun
+                </button>
+                <button 
+                  @click="rankingType = 'afdeling'" 
+                  :class="rankingType === 'afdeling' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'"
+                  class="px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                >
+                  Per Afdeling
+                </button>
+                <button 
+                  @click="rankingType = 'vendor'" 
+                  :class="rankingType === 'vendor' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'"
+                  class="px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                >
+                  Per Vendor
+                </button>
+              </div>
+            </div>
+            
+            <DailyRanking 
+              :title="`Ranking Progress Harian - ${rankingType === 'kebun' ? 'Per Kebun' : rankingType === 'afdeling' ? 'Per Afdeling' : 'Per Vendor'}`"
+              :ranking-data="calculateDailyRanking"
+              :entity-label="rankingType === 'kebun' ? 'Kebun' : rankingType === 'afdeling' ? 'Afdeling' : 'Vendor'"
+              :loading="loading"
+              :last-updated="rankingLastUpdated"
+            />
+          </div>
+        </div>
+      </div>
+
       <div>
         <!-- Toggle Button -->
         <button @click="toggleFilters" class="toggle-button">Tampilkan Filter</button>
@@ -110,24 +157,29 @@ import PieChart from '../components/PieChart.vue';
 import LineChart from '../components/LineChart.vue';
 import RadarChart from '../components/RadarChart.vue';
 import PieChartWithNeedle from '../components/PieChartWithNeedle.vue';
+// FITUR RANKING BARU - Import komponen
+import DailyRanking from '../components/DailyRanking.vue';
 import '../data/rantai.json';
 
 export default {
   name: 'TanamanKonversi',
   components: {
     StatCard,
-    DataGridTK,  // Mengubah komponen yang digunakan
+    DataGridTK,  
     BarChart,
     PieChart,
     LineChart,
     RadarChart,
-    PieChartWithNeedle
+    PieChartWithNeedle,
+    // FITUR RANKING BARU - Daftarkan komponen
+    DailyRanking
   },
   data() {
     return {
       currentTime: '',
       currentDate: '',
       filtersVisible: false,
+      rankingVisible: false, // Add this new property for ranking visibility
       filterKebun: '',
       filterPaket: '',
       uniqueKebun: [''],  
@@ -137,6 +189,9 @@ export default {
   methods: {
     toggleFilters() {
       this.filtersVisible = !this.filtersVisible;
+    },
+    toggleRanking() {
+      this.rankingVisible = !this.rankingVisible;
     },
     updateDateTime() {
       const now = new Date();
@@ -197,6 +252,10 @@ export default {
       paket: '',
       search: ''
     });
+    
+    // FITUR RANKING BARU - Tambahkan state untuk ranking
+    const rankingType = ref('kebun'); // 'kebun', 'afdeling', atau 'vendor'
+    const showRankingDetails = ref(false);
     
     // Kodering mapping
     const koderingMap = ref({});
@@ -2101,6 +2160,104 @@ const radarChartData = computed(() => {
         };
       }
     });
+
+    // FITUR RANKING BARU - Computed property untuk menghitung ranking
+    const calculateDailyRanking = computed(() => {
+      if (!rawData.value || !rawData.value.table || !rawData.value.table.rows) return [];
+      
+      const rows = rawData.value.table.rows;
+      const entityProgressMap = new Map();
+      let currentKebun = null;
+      
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const cells = row.c;
+        
+        if (!cells || cells.length === 0) continue;
+        
+        if (cells[1] && (cells[1].v === 'Kebun' || cells[0] && (cells[0].v === 'Jumlah' || cells[0].v === 'Total'))) continue;
+        
+        const kebunName = cells[1] ? cells[1].v : '';
+        const afdName = cells[3] ? cells[3].v : '';
+        const paketName = cells[2] ? cells[2].v : '';
+        
+        if (!kebunName && !afdName) continue;
+        
+        if (kebunName) {
+          currentKebun = kebunName;
+        }
+        
+        if (!afdName && !kebunName) continue;
+        
+        if (currentKebun && afdName) {
+          if (!shouldIncludeRow(currentKebun, afdName, paketName)) continue;
+          
+          const progressTK = calculateProgressTK(cells);
+          
+          let entityKey, entityName;
+          
+          if (rankingType.value === 'kebun') {
+            entityKey = currentKebun;
+            entityName = currentKebun;
+          } else if (rankingType.value === 'afdeling') {
+            const kodering = getKodering(currentKebun);
+            entityKey = `${currentKebun}-${afdName}`;
+            entityName = `${kodering} - AFD ${afdName}`;
+          } else { // vendor
+            entityKey = paketName;
+            entityName = paketName;
+          }
+          
+          if (!entityProgressMap.has(entityKey)) {
+            entityProgressMap.set(entityKey, {
+              id: entityKey,
+              name: entityName,
+              todayProgress: 0,
+              yesterdayProgress: 0,
+              change: 0,
+              count: 0
+            });
+          }
+          
+          const entity = entityProgressMap.get(entityKey);
+          entity.todayProgress += progressTK;
+          entity.count++;
+        }
+      }
+      
+      progressDataYesterday.value.forEach(item => {
+        let entityKey;
+        
+        if (rankingType.value === 'kebun') {
+          entityKey = item.kebun;
+        } else if (rankingType.value === 'afdeling') {
+          entityKey = `${item.kebun}-${item.afd}`;
+        } else { // vendor
+          entityKey = item.paket;
+        }
+        
+        if (entityProgressMap.has(entityKey)) {
+          entityProgressMap.get(entityKey).yesterdayProgress = item.progress;
+        }
+      });
+      
+      const rankingData = Array.from(entityProgressMap.values()).map(entity => {
+        entity.todayProgress = entity.count > 0 ? entity.todayProgress / entity.count : 0;
+        entity.change = entity.todayProgress - entity.yesterdayProgress;
+        return entity;
+      });
+      
+      return rankingData.sort((a, b) => b.change - a.change);
+    });
+
+    // FITUR RANKING BARU - Computed property untuk waktu terakhir diperbarui
+    const rankingLastUpdated = computed(() => {
+      const now = new Date();
+      return now.toLocaleString('id-ID', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+    });
     
     // Format number
     const formatNumber = (num) => {
@@ -2223,7 +2380,12 @@ const radarChartData = computed(() => {
       formatNumber,
       formatPercentage,
       applyFilters,
-      refreshData
+      refreshData,
+      // FITUR RANKING BARU - Kembalikan variabel dan fungsi baru
+      rankingType,
+      showRankingDetails,
+      calculateDailyRanking,
+      rankingLastUpdated
     };
   }
 }
