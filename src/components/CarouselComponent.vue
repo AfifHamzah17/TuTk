@@ -44,21 +44,33 @@ export default {
       slides: [
         {
           id: 1,
-          title: 'Dashboard PT Perkebunan Nusantara IV Regional 1',
-          description: 'Sistem informasi peremajaan tanaman untuk monitoring dan pengelolaan perkebunan yang lebih efisien.',
-          image: '/3.jpg'
+          title: 'Pembuatan Parit di Kebun Aek Nabara Utara',
+          description: 'Proses pembuatan parit yang optimal di Kebun Aek Nabara Utara (1KAN) untuk sistem drainase yang baik dan mendukung pertumbuhan tanaman kelapa sawit yang sehat.',
+          image: '/1KAN-PARIT.png'
         },
         {
           id: 2,
-          title: 'Monitoring Peremajaan Tanaman',
-          description: 'Pantau proses peremajaan tanaman secara real-time untuk meningkatkan produktivitas perkebunan.',
-          image: '/4.jpg'
+          title: 'Merumpuk Tunggul di Kebun Bandar Betsy',
+          description: 'Kegiatan merumpuk tunggul di Kebun Bandar Betsy (1KBB) sebagai bagian dari proses peremajaan tanaman untuk memastikan area siap untuk tanam baru.',
+          image: '/1KBB-MERUMPUK.png'
         },
         {
           id: 3,
-          title: 'Analisis Data Perkebunan',
-          description: 'Dapatkan insight mendalam dari data perkebunan untuk pengambilan keputusan yang lebih baik.',
-          image: '/5.jpg'
+          title: 'Pembuatan Parit di Kebun Gunung Pamela',
+          description: 'Pembangunan infrastruktur parit di Kebun Gunung Pamela (1KGP) untuk meningkatkan sistem pengairan dan drainase di area perkebunan.',
+          image: '/1KGP-PARIT.png'
+        },
+        {
+          id: 4,
+          title: 'Proses Luku di Kebun Membang Muda',
+          description: 'Pelaksanaan pengolahan tanah dengan metode luku di Kebun Membang Muda (1KMM) untuk mempersiapkan lahan yang optimal bagi pertumbuhan tanaman.',
+          image: '/1KMM-LUKU.png'
+        },
+        {
+          id: 5,
+          title: 'Proses Ripping di Kebun Sei Kebara',
+          description: 'Teknik ripping tanah yang dilakukan di Kebun Sei Kebara (1KSK) untuk memperbaiki struktur tanah dan meningkatkan aerasi akar tanaman kelapa sawit.',
+          image: '/1KSK-RIPPING.png'
         }
       ]
     }
@@ -77,6 +89,7 @@ export default {
 
 .carousel__item {
   position: relative;
+  min-height: 400px; /* Minimum height for the carousel item */
 }
 
 .carousel__slide {
@@ -86,33 +99,61 @@ export default {
 .image-container {
   padding: 1rem;
   transition: all 0.3s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 350px; /* Minimum height for image container */
 }
 
 /* Gaya khusus untuk gambar carousel */
 .carousel-image {
   width: 100%;
-  height: 16rem; /* h-64 */
+  max-width: 100%;
+  height: auto;
+  max-height: 500px; /* Maximum height to prevent images from being too large */
   border-radius: 1rem; /* rounded-2xl */
-  object-fit: cover;
+  object-fit: contain; /* Changed from cover to contain to show full image */
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); /* shadow-2xl */
   transition: transform 0.5s ease, box-shadow 0.3s ease;
 }
 
 /* Efek hover pada gambar */
 .carousel-image:hover {
-  transform: scale(1.05);
+  transform: scale(1.02); /* Reduced scale to prevent overflow */
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
 }
 
 /* Efek hover pada container gambar */
 .image-container:hover {
-  transform: translateY(-5px);
+  transform: translateY(-2px); /* Reduced transform to prevent layout issues */
 }
 
 /* Responsive untuk ukuran gambar */
 @media (min-width: 768px) {
+  .carousel__item {
+    min-height: 500px;
+  }
+  
+  .image-container {
+    min-height: 450px;
+  }
+  
   .carousel-image {
-    height: 24rem; /* h-96 */
+    max-height: 600px;
+  }
+}
+
+@media (max-width: 640px) {
+  .carousel__item {
+    min-height: 300px;
+  }
+  
+  .image-container {
+    min-height: 250px;
+  }
+  
+  .carousel-image {
+    max-height: 350px;
   }
 }
 
