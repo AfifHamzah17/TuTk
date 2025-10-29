@@ -36,49 +36,143 @@
         />
       </div>
 
-      <!-- FITUR RANKING BARU -->
+      <!-- FITUR RANKING BARU - Leaderboard UI -->
       <div>
         <!-- Toggle Button -->
         <button @click="toggleRanking" class="toggle-button">
-          {{ rankingVisible ? 'Sembunyikan' : 'Tampilkan' }} Ranking
+          {{ rankingVisible ? 'Sembunyikan' : 'Tampilkan' }} Ranking Progress Harian
         </button>
 
-        <div v-show="rankingVisible" class="grid grid-cols-1 lg:grid-cols-1 gap-6 mb-8">
-          <div>
-            <div class="flex justify-between items-center mb-4">
-              <h2 class="text-xl font-bold">Ranking Progress Harian</h2>
-              <div class="flex space-x-2">
-                <button 
-                  @click="rankingType = 'kebun'" 
-                  :class="rankingType === 'kebun' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'"
-                  class="px-4 py-2 rounded-md text-sm font-medium transition-colors"
-                >
-                  Per Kebun
-                </button>
-                <button 
-                  @click="rankingType = 'afdeling'" 
-                  :class="rankingType === 'afdeling' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'"
-                  class="px-4 py-2 rounded-md text-sm font-medium transition-colors"
-                >
-                  Per Afdeling
-                </button>
-                <button 
-                  @click="rankingType = 'vendor'" 
-                  :class="rankingType === 'vendor' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'"
-                  class="px-4 py-2 rounded-md text-sm font-medium transition-colors"
-                >
-                  Per Vendor
-                </button>
+        <div v-show="rankingVisible" class="mb-8">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold">Ranking Progress Harian - Semua Paket</h2>
+          </div>
+          
+          <!-- PERUBAHAN: Podium Card untuk Top 3 -->
+          <div class="podium-card mb-6">
+            <div class="podium-header">
+              <h3 class="podium-title">Top 3 Kebun</h3>
+            </div>
+            <div class="podium-content">
+              <div class="podium-positions">
+                <!-- Peringkat 2 (Kiri) -->
+                <div v-if="topRankingData[1]" class="podium-position position-2">
+                  <div class="podium-rank">2</div>
+                  <div class="podium-info">
+                    <div class="podium-name">{{ topRankingData[1].name }}</div>
+                    <div class="podium-details">
+                      <div class="podium-detail">
+                        <span class="detail-label">Kebun:</span>
+                        <span class="detail-value">{{ topRankingData[1].kebun }}</span>
+                      </div>
+                      <div class="podium-detail">
+                        <span class="detail-label">Afd:</span>
+                        <span class="detail-value">{{ topRankingData[1].afd }}</span>
+                      </div>
+                      <div class="podium-detail">
+                        <span class="detail-label">Vendor:</span>
+                        <span class="detail-value">{{ topRankingData[1].paket }}</span>
+                      </div>
+                      <div class="podium-detail">
+                        <span class="detail-label">Luas:</span>
+                        <span class="detail-value">{{ topRankingData[1].luasPaket.toFixed(2) }} ha</span>
+                      </div>
+                    </div>
+                    <div class="podium-progress">
+                      <div class="progress-value">{{ topRankingData[1].progress.toFixed(1) }}%</div>
+                      <div class="progress-change" :class="getChangeClass(topRankingData[1].change)">
+                        {{ topRankingData[1].change > 0 ? '+' : '' }}{{ topRankingData[1].change.toFixed(1) }}%
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Peringkat 1 (Tengah) -->
+                <div v-if="topRankingData[0]" class="podium-position position-1">
+                  <div class="podium-rank">1</div>
+                  <div class="podium-info">
+                    <div class="podium-name">{{ topRankingData[0].name }}</div>
+                    <div class="podium-details">
+                      <div class="podium-detail">
+                        <span class="detail-label">Kebun:</span>
+                        <span class="detail-value">{{ topRankingData[0].kebun }}</span>
+                      </div>
+                      <div class="podium-detail">
+                        <span class="detail-label">Afd:</span>
+                        <span class="detail-value">{{ topRankingData[0].afd }}</span>
+                      </div>
+                      <div class="podium-detail">
+                        <span class="detail-label">Vendor:</span>
+                        <span class="detail-value">{{ topRankingData[0].paket }}</span>
+                      </div>
+                      <div class="podium-detail">
+                        <span class="detail-label">Luas:</span>
+                        <span class="detail-value">{{ topRankingData[0].luasPaket.toFixed(2) }} ha</span>
+                      </div>
+                    </div>
+                    <div class="podium-progress">
+                      <div class="progress-value">{{ topRankingData[0].progress.toFixed(1) }}%</div>
+                      <div class="progress-change" :class="getChangeClass(topRankingData[0].change)">
+                        {{ topRankingData[0].change > 0 ? '+' : '' }}{{ topRankingData[0].change.toFixed(1) }}%
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Peringkat 3 (Kanan) -->
+                <div v-if="topRankingData[2]" class="podium-position position-3">
+                  <div class="podium-rank">3</div>
+                  <div class="podium-info">
+                    <div class="podium-name">{{ topRankingData[2].name }}</div>
+                    <div class="podium-details">
+                      <div class="podium-detail">
+                        <span class="detail-label">Kebun:</span>
+                        <span class="detail-value">{{ topRankingData[2].kebun }}</span>
+                      </div>
+                      <div class="podium-detail">
+                        <span class="detail-label">Afd:</span>
+                        <span class="detail-value">{{ topRankingData[2].afd }}</span>
+                      </div>
+                      <div class="podium-detail">
+                        <span class="detail-label">Vendor:</span>
+                        <span class="detail-value">{{ topRankingData[2].paket }}</span>
+                      </div>
+                      <div class="podium-detail">
+                        <span class="detail-label">Luas:</span>
+                        <span class="detail-value">{{ topRankingData[2].luasPaket.toFixed(2) }} ha</span>
+                      </div>
+                    </div>
+                    <div class="podium-progress">
+                      <div class="progress-value">{{ topRankingData[2].progress.toFixed(1) }}%</div>
+                      <div class="progress-change" :class="getChangeClass(topRankingData[2].change)">
+                        {{ topRankingData[2].change > 0 ? '+' : '' }}{{ topRankingData[2].change.toFixed(1) }}%
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            
-            <DailyRanking 
-              :title="`Ranking Progress Harian - ${rankingType === 'kebun' ? 'Per Kebun' : rankingType === 'afdeling' ? 'Per Afdeling' : 'Per Vendor'}`"
-              :ranking-data="calculateDailyRanking"
-              :entity-label="rankingType === 'kebun' ? 'Kebun' : rankingType === 'afdeling' ? 'Afdeling' : 'Vendor'"
-              :loading="loading"
-              :last-updated="rankingLastUpdated"
-            />
+          </div>
+          
+          <!-- Rest of Ranking List -->
+          <div class="ranking-list">
+            <div v-for="(item, index) in restRankingData" :key="item.id" 
+                 class="ranking-item">
+              <div class="rank-position">{{ index + 4 }}</div>
+              <div class="item-content">
+                <div class="item-name">{{ item.name }}</div>
+                <div class="item-details">
+                  <span class="item-detail">{{ item.kebun }} - {{ item.afd }} - {{ item.paket }}</span>
+                  <span class="item-detail">{{ item.luasPaket.toFixed(2) }} ha</span>
+                </div>
+              </div>
+              <div class="item-progress">
+                <div class="progress-value">{{ item.progress.toFixed(1) }}%</div>
+                <div class="progress-change" :class="getChangeClass(item.change)">
+                  {{ item.change > 0 ? '+' : '' }}{{ item.change.toFixed(1) }}%
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -144,6 +238,14 @@
         @refresh="refreshData"
       />
     </div>
+    <!-- Floating Action Button for Scroll to Top -->
+    <div v-show="showScrollTop" class="fab-container">
+      <button @click="scrollToTop" class="fab" title="Scroll to Top">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+        </svg>
+      </button>
+    </div>
   </div>
 </template>
 
@@ -158,8 +260,6 @@ import PieChart from '../components/PieChart.vue';
 import LineChart from '../components/LineChart.vue';
 import RadarChart from '../components/RadarChart.vue';
 import PieChartWithNeedle from '../components/PieChartWithNeedle.vue';
-// FITUR RANKING BARU - Import komponen
-import DailyRanking from '../components/DailyRanking.vue';
 import '../data/rantai.json';
 
 export default {
@@ -171,16 +271,14 @@ export default {
     PieChart,
     LineChart,
     RadarChart,
-    PieChartWithNeedle,
-    // FITUR RANKING BARU - Daftarkan komponen
-    DailyRanking
+    PieChartWithNeedle
   },
   data() {
     return {
       currentTime: '',
       currentDate: '',
       filtersVisible: false,
-      rankingVisible: false, // Add this new property for ranking visibility
+      rankingVisible: false,
       filterKebun: '',
       filterPaket: '',
       uniqueKebun: [''],  
@@ -200,7 +298,22 @@ export default {
       this.currentDate = now.toLocaleDateString('id-ID', {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
       });
-    }
+    },
+    // Fungsi untuk menentukan kelas perubahan progress
+    getChangeClass(change) {
+      if (change > 0) return 'positive-change';
+      if (change < 0) return 'negative-change';
+      return 'neutral-change';
+    },
+      handleScroll() {
+    this.showScrollTop = window.pageYOffset > 300;
+  },
+  scrollToTop() {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }
   },
   computed: {
     filterTitle() {
@@ -235,9 +348,14 @@ export default {
     this.timeInterval = setInterval(() => {
       this.updateDateTime();
     }, 1000);
+    
+    // Add scroll event listener
+    window.addEventListener('scroll', this.handleScroll);
   },
   beforeUnmount() {
     clearInterval(this.timeInterval);
+      // Remove scroll event listener
+  window.removeEventListener('scroll', this.handleScroll);
   },
   setup() {
     // State variables
@@ -252,10 +370,6 @@ export default {
       paket: '',
       search: ''
     });
-    
-    // FITUR RANKING BARU - Tambahkan state untuk ranking
-    const rankingType = ref('kebun'); // 'kebun', 'afdeling', atau 'vendor'
-    const showRankingDetails = ref(false);
     
     // Kodering mapping
     const koderingMap = ref({});
@@ -370,7 +484,8 @@ export default {
       return true;
     };
     
-    const fetchProgressDataToday = async () => {
+    // Fungsi untuk mengambil semua data progress hari ini
+    const fetchAllProgressDataToday = async () => {
       if (!rawData.value || !rawData.value.table || !rawData.value.table.rows) return [];
       
       const rows = rawData.value.table.rows;
@@ -400,11 +515,23 @@ export default {
         if (currentKebun && afdName) {
           const progressTU = calculateProgressTU(cells);
           
+          // Ambil luas paket
+          let luasPaket = 0;
+          if (cells[4]) {
+            if (cells[4].v !== undefined && cells[4].v !== null) {
+              luasPaket = parseFloat(cells[4].v) || 0;
+            } else if (cells[4].f !== undefined && cells[4].f !== null) {
+              const formattedValue = cells[4].f.replace(/[,.]/g, '');
+              luasPaket = parseFloat(formattedValue) || 0;
+            }
+          }
+          
           result.push({
             kebun: currentKebun,
             afd: afdName,
             paket: paketName,
-            progress: progressTU
+            progress: progressTU,
+            luasPaket: luasPaket
           });
         }
       }
@@ -412,15 +539,33 @@ export default {
       return result;
     };
     
-    const loadProgressDataYesterday = () => {
-      const savedData = localStorage.getItem('progressDataYesterday');
-      if (savedData) {
-        progressDataYesterday.value = JSON.parse(savedData);
-      }
+    // Fungsi untuk menyimpan data progress ke localStorage
+    const saveProgressDataToStorage = () => {
+      const today = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
+      const progressData = {
+        date: today,
+        data: progressDataToday.value
+      };
+      
+      // Simpan data ke localStorage
+      localStorage.setItem('progressData', JSON.stringify(progressData));
     };
     
-    const saveProgressDataForTomorrow = () => {
-      localStorage.setItem('progressDataYesterday', JSON.stringify(progressDataToday.value));
+    // Fungsi untuk memuat data progress dari localStorage
+    const loadProgressDataFromStorage = () => {
+      const savedData = localStorage.getItem('progressData');
+      if (savedData) {
+        const parsedData = JSON.parse(savedData);
+        const today = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
+        
+        // Jika data yang tersimpan adalah dari hari kemarin, gunakan sebagai data kemarin
+        if (parsedData.date !== today) {
+          progressDataYesterday.value = parsedData.data;
+          return true;
+        }
+      }
+      
+      return false;
     };
     
     const processedDataForStats = computed(() => {
@@ -707,6 +852,7 @@ export default {
       { value: 100 }
     ];
     
+    // Menghilangkan nilai negatif pada yAxisConfig
     const yAxisConfig = {
       min: 0,
       max: 100,
@@ -1055,6 +1201,7 @@ export default {
         };
       }
       
+      // Menampilkan semua item pada bagian "semua paket" tanpa averaging
       if (!filterKebun.value && !filterPaket.value) {
         const dataPoints = [];
         let currentKebun = null;
@@ -1735,6 +1882,7 @@ export default {
         };
       }
       
+      // Menampilkan semua item pada bagian "semua paket" tanpa averaging
       if (!filterKebun.value && !filterPaket.value) {
         const dataPoints = [];
         let currentKebun = null;
@@ -1800,8 +1948,14 @@ export default {
       }
     });
 
-    // FITUR RANKING BARU - Computed property untuk menghitung ranking
-    const calculateDailyRanking = computed(() => {
+    // Menghitung perubahan progress harian untuk ranking
+    const calculateDailyProgressChange = (todayProgress, yesterdayProgress) => {
+      if (yesterdayProgress === undefined || yesterdayProgress === null) return 0;
+      return todayProgress - yesterdayProgress;
+    };
+
+    // Data untuk leaderboard - Top 3
+    const topRankingData = computed(() => {
       if (!rawData.value || !rawData.value.table || !rawData.value.table.rows) return [];
       
       const rows = rawData.value.table.rows;
@@ -1829,73 +1983,157 @@ export default {
         if (!afdName && !kebunName) continue;
         
         if (currentKebun && afdName) {
-          if (!shouldIncludeRow(currentKebun, afdName, paketName)) continue;
-          
           const progressTU = calculateProgressTU(cells);
           
-          let entityKey, entityName;
-          
-          if (rankingType.value === 'kebun') {
-            entityKey = currentKebun;
-            entityName = currentKebun;
-          } else if (rankingType.value === 'afdeling') {
-            const kodering = getKodering(currentKebun);
-            entityKey = `${currentKebun}-${afdName}`;
-            entityName = `${kodering} - AFD ${afdName}`;
-          } else { // vendor
-            entityKey = paketName;
-            entityName = paketName;
-          }
+          const entityKey = `${currentKebun}-${afdName}-${paketName}`;
+          const kodering = getKodering(currentKebun);
+          const entityName = `${kodering} - AFD ${afdName} - ${paketName}`;
           
           if (!entityProgressMap.has(entityKey)) {
             entityProgressMap.set(entityKey, {
               id: entityKey,
               name: entityName,
+              kebun: currentKebun,
+              afd: afdName,
+              paket: paketName,
               todayProgress: 0,
               yesterdayProgress: 0,
               change: 0,
-              count: 0
+              count: 0,
+              luasPaket: 0
             });
           }
           
           const entity = entityProgressMap.get(entityKey);
           entity.todayProgress += progressTU;
           entity.count++;
+          
+          // Tambahkan luas paket
+          let luasPaket = 0;
+          if (cells[4]) {
+            if (cells[4].v !== undefined && cells[4].v !== null) {
+              luasPaket = parseFloat(cells[4].v) || 0;
+            } else if (cells[4].f !== undefined && cells[4].f !== null) {
+              const formattedValue = cells[4].f.replace(/[,.]/g, '');
+              luasPaket = parseFloat(formattedValue) || 0;
+            }
+          }
+          entity.luasPaket += luasPaket;
         }
       }
       
+      // Proses data kemarin
       progressDataYesterday.value.forEach(item => {
-        let entityKey;
-        
-        if (rankingType.value === 'kebun') {
-          entityKey = item.kebun;
-        } else if (rankingType.value === 'afdeling') {
-          entityKey = `${item.kebun}-${item.afd}`;
-        } else { // vendor
-          entityKey = item.paket;
-        }
+        const entityKey = `${item.kebun}-${item.afd}-${item.paket}`;
         
         if (entityProgressMap.has(entityKey)) {
           entityProgressMap.get(entityKey).yesterdayProgress = item.progress;
         }
       });
       
+      // Hitung rata-rata dan perubahan
       const rankingData = Array.from(entityProgressMap.values()).map(entity => {
-        entity.todayProgress = entity.count > 0 ? entity.todayProgress / entity.count : 0;
-        entity.change = entity.todayProgress - entity.yesterdayProgress;
+        entity.progress = entity.count > 0 ? entity.todayProgress / entity.count : 0;
+        entity.change = calculateDailyProgressChange(entity.progress, entity.yesterdayProgress);
         return entity;
       });
       
-      return rankingData.sort((a, b) => b.change - a.change);
+      // Urutkan berdasarkan perubahan progress (terbesar ke terkecil)
+      rankingData.sort((a, b) => b.change - a.change);
+      
+      // Ambil 3 data teratas
+      return rankingData.slice(0, 3);
     });
-
-    // FITUR RANKING BARU - Computed property untuk waktu terakhir diperbarui
-    const rankingLastUpdated = computed(() => {
-      const now = new Date();
-      return now.toLocaleString('id-ID', {
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-        hour: '2-digit', minute: '2-digit'
+    
+    // Data untuk leaderboard - Sisanya
+    const restRankingData = computed(() => {
+      if (!rawData.value || !rawData.value.table || !rawData.value.table.rows) return [];
+      
+      const rows = rawData.value.table.rows;
+      const entityProgressMap = new Map();
+      let currentKebun = null;
+      
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const cells = row.c;
+        
+        if (!cells || cells.length === 0) continue;
+        
+        if (cells[1] && (cells[1].v === 'Kebun' || cells[0] && (cells[0].v === 'Jumlah' || cells[0].v === 'Total'))) continue;
+        
+        const kebunName = cells[1] ? cells[1].v : '';
+        const afdName = cells[3] ? cells[3].v : '';
+        const paketName = cells[2] ? cells[2].v : '';
+        
+        if (!kebunName && !afdName) continue;
+        
+        if (kebunName) {
+          currentKebun = kebunName;
+        }
+        
+        if (!afdName && !kebunName) continue;
+        
+        if (currentKebun && afdName) {
+          const progressTU = calculateProgressTU(cells);
+          
+          const entityKey = `${currentKebun}-${afdName}-${paketName}`;
+          const kodering = getKodering(currentKebun);
+          const entityName = `${kodering} - AFD ${afdName} - ${paketName}`;
+          
+          if (!entityProgressMap.has(entityKey)) {
+            entityProgressMap.set(entityKey, {
+              id: entityKey,
+              name: entityName,
+              kebun: currentKebun,
+              afd: afdName,
+              paket: paketName,
+              todayProgress: 0,
+              yesterdayProgress: 0,
+              change: 0,
+              count: 0,
+              luasPaket: 0
+            });
+          }
+          
+          const entity = entityProgressMap.get(entityKey);
+          entity.todayProgress += progressTU;
+          entity.count++;
+          
+          // Tambahkan luas paket
+          let luasPaket = 0;
+          if (cells[4]) {
+            if (cells[4].v !== undefined && cells[4].v !== null) {
+              luasPaket = parseFloat(cells[4].v) || 0;
+            } else if (cells[4].f !== undefined && cells[4].f !== null) {
+              const formattedValue = cells[4].f.replace(/[,.]/g, '');
+              luasPaket = parseFloat(formattedValue) || 0;
+            }
+          }
+          entity.luasPaket += luasPaket;
+        }
+      }
+      
+      // Proses data kemarin
+      progressDataYesterday.value.forEach(item => {
+        const entityKey = `${item.kebun}-${item.afd}-${item.paket}`;
+        
+        if (entityProgressMap.has(entityKey)) {
+          entityProgressMap.get(entityKey).yesterdayProgress = item.progress;
+        }
       });
+      
+      // Hitung rata-rata dan perubahan
+      const rankingData = Array.from(entityProgressMap.values()).map(entity => {
+        entity.progress = entity.count > 0 ? entity.todayProgress / entity.count : 0;
+        entity.change = calculateDailyProgressChange(entity.progress, entity.yesterdayProgress);
+        return entity;
+      });
+      
+      // Urutkan berdasarkan perubahan progress (terbesar ke terkecil)
+      rankingData.sort((a, b) => b.change - a.change);
+      
+      // Ambil data dari posisi 4 ke bawah
+      return rankingData.slice(3);
     });
     
     const formatNumber = (num) => {
@@ -1937,11 +2175,15 @@ export default {
           search: ''
         };
         
-        loadProgressDataYesterday();
+        // Simpan data kemarin sebelum memuat data baru
+        saveProgressDataToStorage();
         
-        progressDataToday.value = await fetchProgressDataToday();
+        // Muat data progress hari ini
+        progressDataToday.value = await fetchAllProgressDataToday();
         
-        saveProgressDataForTomorrow();
+        console.log("Raw data:", rawData.value);
+        console.log("Progress today:", progressDataToday.value);
+        console.log("Progress yesterday:", progressDataYesterday.value);
       } catch (err) {
         error.value = err.message;
         console.error("Error:", err);
@@ -1957,11 +2199,14 @@ export default {
         
         rawData.value = await fetchSheetData();
         
-        loadProgressDataYesterday();
+        // Coba muat data progress dari localStorage
+        const hasYesterdayData = loadProgressDataFromStorage();
         
-        progressDataToday.value = await fetchProgressDataToday();
+        // Muat data progress hari ini
+        progressDataToday.value = await fetchAllProgressDataToday();
         
-        saveProgressDataForTomorrow();
+        // Simpan data progress hari ini untuk besok
+        saveProgressDataToStorage();
         
         console.log("Raw data:", rawData.value);
         console.log("Progress today:", progressDataToday.value);
@@ -2005,11 +2250,9 @@ export default {
       formatPercentage,
       applyFilters,
       refreshData,
-      // FITUR RANKING BARU - Kembalikan variabel dan fungsi baru
-      rankingType,
-      showRankingDetails,
-      calculateDailyRanking,
-      rankingLastUpdated
+      // Kembalikan variabel dan fungsi baru untuk leaderboard
+      topRankingData,
+      restRankingData
     };
   }
 }
@@ -2136,5 +2379,272 @@ export default {
   height: 15px;
   margin-right: 5px;
   border-radius: 3px;
+}
+
+/* PERUBAHAN: Style untuk podium card */
+.podium-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  position: relative;
+}
+
+.podium-header {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 1rem;
+  text-align: center;
+}
+
+.podium-title {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+.podium-content {
+  padding: 2rem 1rem;
+}
+
+.podium-positions {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.podium-position {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.position-1 {
+  order: 2;
+  transform: translateY(-20px);
+}
+
+.position-2 {
+  order: 1;
+  transform: translateY(-10px);
+}
+
+.position-3 {
+  order: 3;
+}
+
+.podium-rank {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: white;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.position-1 .podium-rank {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+}
+
+.position-2 .podium-rank {
+  background: linear-gradient(135deg, #C0C0C0, #808080);
+}
+
+.position-3 .podium-rank {
+  background: linear-gradient(135deg, #CD7F32, #8B4513);
+}
+
+.podium-info {
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  width: 100%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.podium-name {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: #1f2937;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.podium-details {
+  margin-bottom: 0.75rem;
+}
+
+.podium-detail {
+  display: flex;
+  margin-bottom: 0.25rem;
+  font-size: 0.75rem;
+}
+
+.detail-label {
+  font-weight: 500;
+  margin-right: 0.25rem;
+  min-width: 40px;
+  color: #6b7280;
+}
+
+.detail-value {
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.podium-progress {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.progress-value {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #1f2937;
+}
+
+.progress-change {
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.ranking-list {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.ranking-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.ranking-item:last-child {
+  border-bottom: none;
+}
+
+.rank-position {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-right: 1rem;
+  color: #4b5563;
+}
+
+.item-content {
+  flex-grow: 1;
+}
+
+.item-name {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.item-details {
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.item-detail {
+  margin-right: 1rem;
+}
+
+.item-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.positive-change {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.negative-change {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.neutral-change {
+  background-color: #e2e3e5;
+  color: #383d41;
+}
+
+/* Responsive untuk podium */
+@media (max-width: 768px) {
+  .podium-positions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .position-1,
+  .position-2,
+  .position-3 {
+    transform: none;
+    order: initial;
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+  
+  .podium-info {
+    max-width: 300px;
+  }
+}
+.fab-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  transition: opacity 0.3s ease;
+}
+
+.fab {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.fab:hover {
+  background-color: #2563eb;
+  transform: scale(1.1);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.fab:active {
+  transform: scale(0.95);
 }
 </style>
