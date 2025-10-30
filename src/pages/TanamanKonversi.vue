@@ -48,111 +48,118 @@
             <h2 class="text-xl font-bold">Ranking Progress Harian - Semua Paket</h2>
           </div>
           
-          <!-- PERUBAHAN: Podium Card untuk Top 3 -->
-          <div class="podium-card mb-6">
-            <div class="podium-header">
-              <h3 class="podium-title">Top 3 Performers</h3>
+    <!-- PERUBAHAN: Podium Card untuk Top 3 -->
+    <div class="podium-card mb-6">
+      <div class="podium-header">
+        <h3 class="podium-title">Top 3 Kebun</h3>
+      </div>
+      <div class="podium-content">
+        <div class="podium-positions">
+          <!-- Peringkat 2 (Kiri) -->
+          <div v-if="topRankingData[1]" class="podium-position position-2">
+            <div class="medal-container medal-silver">
+              <img src="/medal (2).png" alt="Medal Rank 2" class="medal-image">
             </div>
-            <div class="podium-content">
-              <div class="podium-positions">
-                <!-- Peringkat 2 (Kiri) -->
-                <div v-if="topRankingData[1]" class="podium-position position-2">
-                  <div class="podium-rank">2</div>
-                  <div class="podium-info">
-                    <div class="podium-name">{{ topRankingData[1].name }}</div>
-                    <div class="podium-details">
-                      <div class="podium-detail">
-                        <span class="detail-label">Kebun:</span>
-                        <span class="detail-value">{{ topRankingData[1].kebun }}</span>
-                      </div>
-                      <div class="podium-detail">
-                        <span class="detail-label">Afd:</span>
-                        <span class="detail-value">{{ topRankingData[1].afd }}</span>
-                      </div>
-                      <div class="podium-detail">
-                        <span class="detail-label">Vendor:</span>
-                        <span class="detail-value">{{ topRankingData[1].paket }}</span>
-                      </div>
-                      <div class="podium-detail">
-                        <span class="detail-label">Luas:</span>
-                        <span class="detail-value">{{ topRankingData[1].luasPaket.toFixed(2) }} ha</span>
-                      </div>
-                    </div>
-                    <div class="podium-progress">
-                      <div class="progress-value">{{ topRankingData[1].progress.toFixed(1) }}%</div>
-                      <div class="progress-change" :class="getChangeClass(topRankingData[1].change)">
-                        {{ topRankingData[1].change > 0 ? '+' : '' }}{{ topRankingData[1].change.toFixed(1) }}%
-                      </div>
-                    </div>
-                  </div>
+            <div class="podium-info">
+              <div class="podium-name">{{ topRankingData[1].name }}</div>
+              <div class="podium-details">
+                <div class="podium-detail">
+                  <span class="detail-label">Kebun:</span>
+                  <span class="detail-value">{{ topRankingData[1].kebun }}</span>
                 </div>
-                
-                <!-- Peringkat 1 (Tengah) -->
-                <div v-if="topRankingData[0]" class="podium-position position-1">
-                  <div class="podium-rank">1</div>
-                  <div class="podium-info">
-                    <div class="podium-name">{{ topRankingData[0].name }}</div>
-                    <div class="podium-details">
-                      <div class="podium-detail">
-                        <span class="detail-label">Kebun:</span>
-                        <span class="detail-value">{{ topRankingData[0].kebun }}</span>
-                      </div>
-                      <div class="podium-detail">
-                        <span class="detail-label">Afd:</span>
-                        <span class="detail-value">{{ topRankingData[0].afd }}</span>
-                      </div>
-                      <div class="podium-detail">
-                        <span class="detail-label">Vendor:</span>
-                        <span class="detail-value">{{ topRankingData[0].paket }}</span>
-                      </div>
-                      <div class="podium-detail">
-                        <span class="detail-label">Luas:</span>
-                        <span class="detail-value">{{ topRankingData[0].luasPaket.toFixed(2) }} ha</span>
-                      </div>
-                    </div>
-                    <div class="podium-progress">
-                      <div class="progress-value">{{ topRankingData[0].progress.toFixed(1) }}%</div>
-                      <div class="progress-change" :class="getChangeClass(topRankingData[0].change)">
-                        {{ topRankingData[0].change > 0 ? '+' : '' }}{{ topRankingData[0].change.toFixed(1) }}%
-                      </div>
-                    </div>
-                  </div>
+                <div class="podium-detail">
+                  <span class="detail-label">Afd:</span>
+                  <span class="detail-value">{{ topRankingData[1].afd }}</span>
                 </div>
-                
-                <!-- Peringkat 3 (Kanan) -->
-                <div v-if="topRankingData[2]" class="podium-position position-3">
-                  <div class="podium-rank">3</div>
-                  <div class="podium-info">
-                    <div class="podium-name">{{ topRankingData[2].name }}</div>
-                    <div class="podium-details">
-                      <div class="podium-detail">
-                        <span class="detail-label">Kebun:</span>
-                        <span class="detail-value">{{ topRankingData[2].kebun }}</span>
-                      </div>
-                      <div class="podium-detail">
-                        <span class="detail-label">Afd:</span>
-                        <span class="detail-value">{{ topRankingData[2].afd }}</span>
-                      </div>
-                      <div class="podium-detail">
-                        <span class="detail-label">Vendor:</span>
-                        <span class="detail-value">{{ topRankingData[2].paket }}</span>
-                      </div>
-                      <div class="podium-detail">
-                        <span class="detail-label">Luas:</span>
-                        <span class="detail-value">{{ topRankingData[2].luasPaket.toFixed(2) }} ha</span>
-                      </div>
-                    </div>
-                    <div class="podium-progress">
-                      <div class="progress-value">{{ topRankingData[2].progress.toFixed(1) }}%</div>
-                      <div class="progress-change" :class="getChangeClass(topRankingData[2].change)">
-                        {{ topRankingData[2].change > 0 ? '+' : '' }}{{ topRankingData[2].change.toFixed(1) }}%
-                      </div>
-                    </div>
-                  </div>
+                <div class="podium-detail">
+                  <span class="detail-label">Vendor:</span>
+                  <span class="detail-value">{{ topRankingData[1].paket }}</span>
+                </div>
+                <div class="podium-detail">
+                  <span class="detail-label">Luas:</span>
+                  <span class="detail-value">{{ topRankingData[1].luasPaket.toFixed(2) }} ha</span>
+                </div>
+              </div>
+              <div class="podium-progress">
+                <div class="progress-value">{{ topRankingData[1].progress.toFixed(1) }}%</div>
+                <div class="progress-change" :class="getChangeClass(topRankingData[1].change)">
+                  {{ topRankingData[1].change > 0 ? '+' : '' }}{{ topRankingData[1].change.toFixed(1) }}%
                 </div>
               </div>
             </div>
           </div>
+          
+          <!-- Peringkat 1 (Tengah) dengan gambar medal -->
+          <div v-if="topRankingData[0]" class="podium-position position-1">
+            <div class="medal-container medal-gold">
+              <img src="/medal (1).png" alt="Medal Rank 1" class="medal-image">
+            </div>
+            <div class="podium-info">
+              <div class="podium-name">{{ topRankingData[0].name }}</div>
+              <div class="podium-details">
+                <div class="podium-detail">
+                  <span class="detail-label">Kebun:</span>
+                  <span class="detail-value">{{ topRankingData[0].kebun }}</span>
+                </div>
+                <div class="podium-detail">
+                  <span class="detail-label">Afd:</span>
+                  <span class="detail-value">{{ topRankingData[0].afd }}</span>
+                </div>
+                <div class="podium-detail">
+                  <span class="detail-label">Vendor:</span>
+                  <span class="detail-value">{{ topRankingData[0].paket }}</span>
+                </div>
+                <div class="podium-detail">
+                  <span class="detail-label">Luas:</span>
+                  <span class="detail-value">{{ topRankingData[0].luasPaket.toFixed(2) }} ha</span>
+                </div>
+              </div>
+              <div class="podium-progress">
+                <div class="progress-value">{{ topRankingData[0].progress.toFixed(1) }}%</div>
+                <div class="progress-change" :class="getChangeClass(topRankingData[0].change)">
+                  {{ topRankingData[0].change > 0 ? '+' : '' }}{{ topRankingData[0].change.toFixed(1) }}%
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Peringkat 3 (Kanan) -->
+          <div v-if="topRankingData[2]" class="podium-position position-3">
+            <div class="medal-container medal-bronze">
+              <img src="/medal (3).png" alt="Medal Rank 3" class="medal-image">
+            </div>
+            <div class="podium-info">
+              <div class="podium-name">{{ topRankingData[2].name }}</div>
+              <div class="podium-details">
+                <div class="podium-detail">
+                  <span class="detail-label">Kebun:</span>
+                  <span class="detail-value">{{ topRankingData[2].kebun }}</span>
+                </div>
+                <div class="podium-detail">
+                  <span class="detail-label">Afd:</span>
+                  <span class="detail-value">{{ topRankingData[2].afd }}</span>
+                </div>
+                <div class="podium-detail">
+                  <span class="detail-label">Vendor:</span>
+                  <span class="detail-value">{{ topRankingData[2].paket }}</span>
+                </div>
+                <div class="podium-detail">
+                  <span class="detail-label">Luas:</span>
+                  <span class="detail-value">{{ topRankingData[2].luasPaket.toFixed(2) }} ha</span>
+                </div>
+              </div>
+              <div class="podium-progress">
+                <div class="progress-value">{{ topRankingData[2].progress.toFixed(1) }}%</div>
+                <div class="progress-change" :class="getChangeClass(topRankingData[2].change)">
+                  {{ topRankingData[2].change > 0 ? '+' : '' }}{{ topRankingData[2].change.toFixed(1) }}%
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br></br>
           
           <!-- Rest of Ranking List -->
           <div class="ranking-list">
@@ -441,10 +448,11 @@ export default {
         { rencana: cells[9], realisasi: cells[11] },     
         { rencana: cells[13], realisasi: cells[15] },    
         { rencana: cells[17], realisasi: cells[19] },    
-        { rencana: cells[21], realisasi: cells[23] },    
+        // { rencana: cells[21], realisasi: cells[23] },    
         { rencana: cells[25], realisasi: cells[27] },    
         { rencana: cells[29], realisasi: cells[31] },    
-        { rencana: cells[33], realisasi: cells[35] }     
+        { rencana: cells[33], realisasi: cells[35] },     
+        { rencana: cells[37], realisasi: cells[39] }     
       ];
 
       let totalRencana = 0;
@@ -598,7 +606,7 @@ export default {
         if (!afdName && !kebunName) continue;
         
         if (currentKebun && afdName) {
-          const tanggalSPPBJ = cells[39] ? (cells[39].f || cells[39].v) : '';
+          const tanggalSPPBJ = cells[44] ? (cells[44].f || cells[44].v) : '';
           const jumlahHariKerja = calculateDaysDifference(tanggalSPPBJ);
           
           result.push({
