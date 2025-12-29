@@ -1,45 +1,8 @@
 <template>
   <div id="app">
-    <nav v-if="isLoggedIn" class="navbar">
-      <div class="container">
-        <div class="navbar-brand">
-          <router-link to="/" class="brand-link">Dashboard Monitoring</router-link>
-        </div>
-        <div class="navbar-menu">
-          <router-link to="/" class="nav-item">Home</router-link>
-          <router-link to="/tanaman-ulang" class="nav-item">Tanaman Ulang</router-link>
-          <router-link to="/tanaman-konversi" class="nav-item">Tanaman Konversi</router-link>
-          <router-link v-if="isAdmin" to="/admin" class="nav-item">Admin</router-link>
-          <a @click="handleLogout" class="nav-item logout">Logout</a>
-        </div>
-      </div>
-    </nav>
     <router-view></router-view>
   </div>
 </template>
-
-<script>
-import { logout } from './services/authService';
-
-export default {
-  name: 'App',
-  computed: {
-    isLoggedIn() {
-      return !!localStorage.getItem('token');
-    },
-    isAdmin() {
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      return user.role === 'admin';
-    }
-  },
-  methods: {
-    handleLogout() {
-      logout();
-      this.$router.push('/login');
-    }
-  }
-}
-</script>
 
 <style>
 /* Global styles */

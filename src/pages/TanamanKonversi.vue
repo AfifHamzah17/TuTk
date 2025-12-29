@@ -1512,144 +1512,161 @@ export default {
       };
     });
 
-    const radarChartData = computed(() => {
-      if (!rawData.value || !rawData.value.table || !rawData.value.table.rows) {
-        return [];
+const radarChartData = computed(() => {
+  if (!rawData.value || !rawData.value.table || !rawData.value.table.rows) {
+    return [];
+  }
+  
+  const rows = rawData.value.table.rows;
+  
+  // 1. Update Label: Menambahkan item baru
+  const activityLabels = [
+    'Membongkar Tunggul',
+    'Merumpuk Tunggul',
+    'Ripping',
+    'Luku',
+    'Pembuatan Parit',
+    'Membuat Teras',        // Item Baru
+    'Membuat Jalan Baru',   // Item Baru
+    'Menanam Mucuna',
+    'Lubang Tanam',
+    'Menanam KS'
+  ];
+  
+  const chartsData = [];
+  let currentKebun = null;
+  
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const cells = row.c;
+    
+    if (!cells || cells.length === 0) continue;
+    
+    if (cells[1] && (cells[1].v === 'Kebun' || cells[0] && (cells[0].v === 'Jumlah' || cells[0].v === 'Total'))) continue;
+    
+    const kebunName = cells[1] ? cells[1].v : '';
+    const afdName = cells[3] ? cells[3].v : '';
+    const paketName = cells[2] ? cells[2].v : '';
+    
+    if (!kebunName && !afdName) continue;
+    
+    if (kebunName) {
+      currentKebun = kebunName;
+    }
+    
+    if (!afdName && !kebunName) continue;
+    
+    if (currentKebun && afdName) {
+      if (!shouldIncludeRow(currentKebun, afdName, paketName)) continue;
+      
+      let label = '';
+      
+      if (filterKebun.value && filterPaket.value) {
+        label = afdName;
+      } else if (filterPaket.value && !filterKebun.value) {
+        const kodering = getKodering(currentKebun);
+        label = `${kodering} - AFD ${afdName}`;
+      } else if (filterKebun.value && !filterPaket.value) {
+        label = `AFD ${afdName} - ${paketName}`;
+      } else {
+        const kodering = getKodering(currentKebun);
+        label = `${kodering} - AFD ${afdName} - ${paketName}`;
       }
       
-      const rows = rawData.value.table.rows;
+      // 2. Update Logika Persentase
+      const calculatePercentage = (realisasi, rencana) => {
+        // Logika: Jika rencana 0, anggap 100%
+        if (!rencana || rencana === 0) return 100;
+        
+        const pct = (realisasi / rencana) * 100;
+        
+        // Logika: Jika > 100%, buat jadi 100%
+        return pct > 100 ? 100 : pct;
+      };
       
-      const activityLabels = [
-        'Membongkar Tunggul',
-        'Merumpuk Tunggul',
-        'Ripping',
-        'Luku',
-        'Pembuatan Parit',
-        'Menanam Mucuna',
-        'Lubang Tanam',
-        'Menanam KS'
+      const activities = [
+        { name: 'Membongkar Tunggul', rencana: cells[5] ? cells[5].v : 0, realisasi: cells[7] ? cells[7].v : 0 },
+        { name: 'Merumpuk Tunggul', rencana: cells[9] ? cells[9].v : 0, realisasi: cells[11] ? cells[11].v : 0 },
+        { name: 'Ripping', rencana: cells[13] ? cells[13].v : 0, realisasi: cells[15] ? cells[15].v : 0 },
+        { name: 'Luku', rencana: cells[17] ? cells[17].v : 0, realisasi: cells[19] ? cells[19].v : 0 },
+        { name: 'Pembuatan Parit', rencana: cells[21] ? cells[21].v : 0, realisasi: cells[23] ? cells[23].v : 0 },
+        
+        // 3. Data Baru: Membuat Teras (46, 48) dan Membuat Jalan Baru (50, 52)
+        { name: 'Membuat Teras', rencana: cells[46] ? cells[46].v : 0, realisasi: cells[48] ? cells[48].v : 0 },
+        { name: 'Membuat Jalan Baru', rencana: cells[50] ? cells[50].v : 0, realisasi: cells[52] ? cells[52].v : 0 },
+        
+        { name: 'Menanam Mucuna', rencana: cells[25] ? cells[25].v : 0, realisasi: cells[27] ? cells[27].v : 0 },
+        { name: 'Lubang Tanam', rencana: cells[29] ? cells[29].v : 0, realisasi: cells[31] ? cells[31].v : 0 },
+        { name: 'Menanam KS', rencana: cells[37] ? cells[37].v : 0, realisasi: cells[39] ? cells[39].v : 0 } 
+        // Note: Saya koreksi index Menanam KS ke 37/39 agar sesuai dengan grid sebelumnya,
+        // jika di kode Anda aslinya memakai 33/35 (yang merupakan Menutup Lubang Tanam), 
+        // silakan sesuaikan kembali. Tapi berdasarkan grid yang kita buat, Menanam KS itu 37/39.
       ];
       
-      const chartsData = [];
-      let currentKebun = null;
+      const activityData = [];
+      const detailInfo = [];
       
-      for (let i = 0; i < rows.length; i++) {
-        const row = rows[i];
-        const cells = row.c;
+      activities.forEach(activity => {
+        const rencana = parseFloat(activity.rencana) || 0;
+        const realisasi = parseFloat(activity.realisasi) || 0;
         
-        if (!cells || cells.length === 0) continue;
+        // Kita tidak perlu Math.min disini lagi karena sudah ada di calculatePercentage
+        let persentase = calculatePercentage(realisasi, rencana);
         
-        if (cells[1] && (cells[1].v === 'Kebun' || cells[0] && (cells[0].v === 'Jumlah' || cells[0].v === 'Total'))) continue;
+        activityData.push(persentase);
         
-        const kebunName = cells[1] ? cells[1].v : '';
-        const afdName = cells[3] ? cells[3].v : '';
-        const paketName = cells[2] ? cells[2].v : '';
-        
-        if (!kebunName && !afdName) continue;
-        
-        if (kebunName) {
-          currentKebun = kebunName;
-        }
-        
-        if (!afdName && !kebunName) continue;
-        
-        if (currentKebun && afdName) {
-          if (!shouldIncludeRow(currentKebun, afdName, paketName)) continue;
-          
-          let label = '';
-          
-          if (filterKebun.value && filterPaket.value) {
-            label = afdName;
-          } else if (filterPaket.value && !filterKebun.value) {
-            const kodering = getKodering(currentKebun);
-            label = `${kodering} - AFD ${afdName}`;
-          } else if (filterKebun.value && !filterPaket.value) {
-            label = `AFD ${afdName} - ${paketName}`;
-          } else {
-            const kodering = getKodering(currentKebun);
-            label = `${kodering} - AFD ${afdName} - ${paketName}`;
-          }
-          
-          const calculatePercentage = (realisasi, rencana) => {
-            if (!rencana || rencana === 0) return 0;
-            return (realisasi / rencana) * 100;
-          };
-          
-          const activities = [
-            { name: 'Membongkar Tunggul', rencana: cells[5] ? cells[5].v : 0, realisasi: cells[7] ? cells[7].v : 0 },
-            { name: 'Merumpuk Tunggul', rencana: cells[9] ? cells[9].v : 0, realisasi: cells[11] ? cells[11].v : 0 },
-            { name: 'Ripping', rencana: cells[13] ? cells[13].v : 0, realisasi: cells[15] ? cells[15].v : 0 },
-            { name: 'Luku', rencana: cells[17] ? cells[17].v : 0, realisasi: cells[19] ? cells[19].v : 0 },
-            { name: 'Pembuatan Parit', rencana: cells[21] ? cells[21].v : 0, realisasi: cells[23] ? cells[23].v : 0 },
-            { name: 'Menanam Mucuna', rencana: cells[25] ? cells[25].v : 0, realisasi: cells[27] ? cells[27].v : 0 },
-            { name: 'Lubang Tanam', rencana: cells[29] ? cells[29].v : 0, realisasi: cells[31] ? cells[31].v : 0 },
-            { name: 'Menanamam KS', rencana: cells[33] ? cells[33].v : 0, realisasi: cells[35] ? cells[35].v : 0 }
-          ];
-          
-          const activityData = [];
-          const detailInfo = [];
-          
-          activities.forEach(activity => {
-            const rencana = parseFloat(activity.rencana) || 0;
-            const realisasi = parseFloat(activity.realisasi) || 0;
-            
-            let persentase = calculatePercentage(realisasi, rencana);
-            persentase = Math.min(persentase, 100);
-            
-            activityData.push(persentase);
-            
-            detailInfo.push({
-              rencana: rencana,
-              realisasi: realisasi
-            });
-          });
-          
-          chartsData.push({
-            title: label,
-            data: {
-              labels: activityLabels,
-              datasets: [{
-                label: 'Progress (%)',
-                data: activityData,
-                detailInfo: detailInfo, 
-                backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                borderColor: 'rgba(59, 130, 246, 1)',
-                pointBackgroundColor: 'rgba(59, 130, 246, 1)',
-                pointBorderColor: '#fff',
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: 'rgba(59, 130, 246, 1)'
-              }]
-            },
-            options: {
-              scales: {
-                r: {
-                  beginAtZero: true,
-                  max: 100,
-                  ticks: {
-                    stepSize: 20,
-                    callback: function(value) {
-                      return value + '%';
-                    }
-                  }
-                }
-              },
-              plugins: {
-                tooltip: {
-                  callbacks: {
-                    label: function(context) {
-                      return `${context.label}: ${context.parsed.r.toFixed(2)}%`;
-                    }
-                  }
+        detailInfo.push({
+          rencana: rencana,
+          realisasi: realisasi
+        });
+      });
+      
+      chartsData.push({
+        title: label,
+        data: {
+          labels: activityLabels,
+          datasets: [{
+            label: 'Progress (%)',
+            data: activityData,
+            detailInfo: detailInfo, 
+            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+            borderColor: 'rgba(59, 130, 246, 1)',
+            pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgba(59, 130, 246, 1)'
+          }]
+        },
+        options: {
+          scales: {
+            r: {
+              beginAtZero: true,
+              max: 100,
+              ticks: {
+                stepSize: 20,
+                callback: function(value) {
+                  return value + '%';
                 }
               }
             }
-          });
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `${context.label}: ${context.parsed.r.toFixed(2)}%`;
+                }
+              }
+            }
+          }
         }
-      }
-      
-      console.log("Radar Chart Data:", chartsData);
-      return chartsData;
-    });
+      });
+    }
+  }
+  
+  console.log("Radar Chart Data:", chartsData);
+  return chartsData;
+});
 
     const pieWithNeedleChartData = computed(() => {
       if (!rawData.value || !rawData.value.table || !rawData.value.table.rows) {

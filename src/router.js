@@ -34,8 +34,6 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Home from './pages/Home.vue';
 import TanamanUlang from './pages/TanamanUlang.vue';
 import TanamanKonversi from './pages/TanamanKonversi.vue';
-import Login from './pages/Login.vue';
-import Register from './pages/Register.vue';
 // import AdminDashboard from './pages/AdminDashboard.vue';
 
 const routes = [

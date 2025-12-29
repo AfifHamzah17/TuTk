@@ -15,8 +15,8 @@
       </div>
     </div>
     
-    <div class="table-container">
-      <table class="data-table">
+    <div class="table-container overflow-x-auto">
+      <table class="data-table min-w-full">
         <thead>
           <tr>
             <th class="w-12">No</th>
@@ -25,6 +25,10 @@
             <th class="w-32">Nama Vendor</th>
             <th class="w-24">Luas</th>
             <th class="w-64">Pembuatan Parit</th>
+            <!-- Header Baru (Pindah ke sini, setelah Parit) -->
+            <th class="w-64">Membuat Teras</th>
+            <th class="w-64">Membuat Jalan Baru</th>
+            <!-- End Header Baru -->
             <th class="w-64">Membongkar Tunggul</th>
             <th class="w-64">Merumpuk Tunggul</th>
             <th class="w-64">Ripping</th>
@@ -42,9 +46,9 @@
           <template v-for="(group, groupName) in paginatedGroupedData" :key="groupName">
             <!-- Header Group Kebun -->
             <tr class="kebun-group">
-              <td colspan="17" class="kebun-header px-6 py-3 cursor-pointer" @click="toggleGroup(groupName)">
+              <!-- Colspan tetap 19 karena jumlah kolom tidak berubah, hanya urutan -->
+              <td colspan="19" class="kebun-header px-6 py-3 cursor-pointer" @click="toggleGroup(groupName)">
                 <div class="flex items-center">
-                  <!-- Ikon untuk toggle minimize/maximize -->
                   <svg 
                     class="w-5 h-5 text-green-600 mr-2 transform transition-transform duration-200" 
                     :class="{ 'rotate-90': !minimizedGroups[groupName] }"
@@ -60,7 +64,6 @@
                   </svg>
                   <span class="text-lg font-semibold">{{ groupName }}</span>
                   <span class="ml-2 text-sm text-gray-500">({{ group.length }} AFD)</span>
-                  <!-- Status indikator -->
                   <span class="ml-2 text-xs px-2 py-1 rounded-full" 
                         :class="minimizedGroups[groupName] ? 'bg-gray-200 text-gray-700' : 'bg-green-100 text-green-800'">
                     {{ minimizedGroups[groupName] ? 'Minimized' : 'Expanded' }}
@@ -69,7 +72,7 @@
               </td>
             </tr>
             
-            <!-- Data per AFD dalam group - hanya ditampilkan jika grup tidak diminimalkan -->
+            <!-- Data per AFD dalam group -->
             <template v-if="!minimizedGroups[groupName]">
               <tr v-for="(row, index) in group" :key="index" class="data-grid-row">
                 <td class="data-grid-cell font-medium">{{ row.no }}</td>
@@ -79,6 +82,8 @@
                 </td>
                 <td class="data-grid-cell">{{ row.namaPaket }}</td>
                 <td class="data-grid-cell">{{ formatNumber(row.luasPaket) }} ha</td>
+                
+                <!-- 1. Pembuatan Parit -->
                 <td class="data-grid-cell">
                   <ProgressItem
                     title="Pembuatan Parit"
@@ -89,6 +94,32 @@
                     :persentase="row.pembuatanParit.persentase"
                   />
                 </td>
+                
+                <!-- 2. Membuat Teras (Unit Meter, Posisi setelah Parit) -->
+                <td class="data-grid-cell">
+                  <ProgressItem
+                    title="Membuat Teras"
+                    unit="mtr"
+                    :rencana="row.membuatTeras.rencana"
+                    :hari-ini="row.membuatTeras.hariIni"
+                    :sd-hari-ini="row.membuatTeras.sdHariIni"
+                    :persentase="row.membuatTeras.persentase"
+                  />
+                </td>
+                
+                <!-- 3. Membuat Jalan Baru (Unit Meter, Posisi setelah Teras) -->
+                <td class="data-grid-cell">
+                  <ProgressItem
+                    title="Membuat Jalan Baru"
+                    unit="mtr"
+                    :rencana="row.membuatJalanBaru.rencana"
+                    :hari-ini="row.membuatJalanBaru.hariIni"
+                    :sd-hari-ini="row.membuatJalanBaru.sdHariIni"
+                    :persentase="row.membuatJalanBaru.persentase"
+                  />
+                </td>
+
+                <!-- Sisa Kolom (Urutan Sesuai Header) -->
                 <td class="data-grid-cell">
                   <ProgressItem
                     title="Membongkar Tunggul"
@@ -260,9 +291,7 @@ export default {
       currentPage: 1,
       itemsPerPage: 10,
       customItemsPerPage: 10,
-      // State untuk melacak grup yang diminimalkan
       minimizedGroups: {},
-      // State untuk melihat apakah semua grup diminimalkan
       allGroupsMinimized: false
     };
   },
@@ -275,121 +304,131 @@ export default {
       let currentKebun = null;
       let no = 0;
       
-      // Fungsi untuk menghitung persentase
+      // --- LOGIKA PERHITUNGAN PERSEN (UPDATE SESUAI REQUEST) ---
       const calculatePercentage = (realisasi, rencana) => {
-        if (!rencana || rencana === 0) return 0;
-        return (realisasi / rencana) * 100;
+        // 1. Jika rencana 0, anggap 100%
+        if (!rencana || rencana === 0) return 100;
+        
+        const pct = (realisasi / rencana) * 100;
+        
+        // 2. Jika persentase > 100%, batasi menjadi 100%
+        if (pct > 100) return 100;
+        
+        return pct;
       };
+      // ----------------------------------------------------------
       
-      // Proses setiap baris
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
         const cells = row.c;
         
-        // Skip baris kosong
         if (!cells || cells.length === 0) continue;
         
-        // Cek apakah ini baris nama kebun
         const kebunName = cells[1] ? cells[1].v : '';
         
-        // Skip baris header
         if (kebunName === 'Kebun') continue;
-        
-        // Skip baris "Jumlah"
         if (cells[0] && cells[0].v === 'Jumlah') continue;
-        
-        // Skip baris "Total"
         if (cells[0] && cells[0].v === 'Total') continue;
         
-        // Ambil data dari sel
         const namaPaket = cells[2] ? cells[2].v : '';
         const afdName = cells[3] ? cells[3].v : '';
         const luasPaket = cells[4] ? cells[4].v : 0;
         
-        // LOGIKA BARU: Skip baris yang tidak memiliki kebun dan AFD
         if (!kebunName && !afdName) {
-          continue; // Lewati baris ini
+          continue;
         }
         
-        // Jika ini baris nama kebun, set currentKebun
         if (kebunName) {
           currentKebun = kebunName;
         }
         
-        // Skip baris yang tidak memiliki AFD (kecuali baris nama kebun)
         if (!afdName && !kebunName) {
-          continue; // Lewati baris ini
+          continue;
         }
         
-        // Membongkar Tunggul
+        // --- Data Mapping ---
+        
+        // Membongkar Tunggul (5,6,7)
         const MembongkarTunggulRencana = cells[5] ? cells[5].v : 0;
         const MembongkarTunggulHariIni = cells[6] ? cells[6].v : 0;
         const MembongkarTunggulSdHariIni = cells[7] ? cells[7].v : 0;
         const MembongkarTunggulPersentase = calculatePercentage(MembongkarTunggulSdHariIni, MembongkarTunggulRencana);
         
-        // Merumpuk Tunggul
+        // Merumpuk Tunggul (9,10,11)
         const MerumpukTunggulRencana = cells[9] ? cells[9].v : 0;
         const MerumpukTunggulHariIni = cells[10] ? cells[10].v : 0;
         const MerumpukTunggulSdHariIni = cells[11] ? cells[11].v : 0;
         const MerumpukTunggulPersentase = calculatePercentage(MerumpukTunggulSdHariIni, MerumpukTunggulRencana);
         
-        // Ripper
+        // Ripper (13,14,15)
         const ripperRencana = cells[13] ? cells[13].v : 0;
         const ripperHariIni = cells[14] ? cells[14].v : 0;
         const ripperSdHariIni = cells[15] ? cells[15].v : 0;
         const ripperPersentase = calculatePercentage(ripperSdHariIni, ripperRencana);
         
-        // Luku
+        // Luku (17,18,19)
         const lukuRencana = cells[17] ? cells[17].v : 0;
         const lukuHariIni = cells[18] ? cells[18].v : 0;
         const lukuSdHariIni = cells[19] ? cells[19].v : 0;
         const lukuPersentase = calculatePercentage(lukuSdHariIni, lukuRencana);
         
-        // Pembuatan Parit
+        // Pembuatan Parit (21,22,23)
         const PembuatanParitRencana = cells[21] ? cells[21].v : 0;
         const PembuatanParitHariIni = cells[22] ? cells[22].v : 0;
         const PembuatanParitSdHariIni = cells[23] ? cells[23].v : 0;
         const PembuatanParitPersentase = calculatePercentage(PembuatanParitSdHariIni, PembuatanParitRencana);
         
-        // Menanam Mucuna
+        // Menanam Mucuna (25,26,27)
         const MenanamMucunaRencana = cells[25] ? cells[25].v : 0;
         const MenanamMucunaHariIni = cells[26] ? cells[26].v : 0;
         const MenanamMucunaSdHariIni = cells[27] ? cells[27].v : 0;
         const MenanamMucunaPersentase = calculatePercentage(MenanamMucunaSdHariIni, MenanamMucunaRencana);
         
-        // Lubang Tanam
+        // Lubang Tanam (29,30,31)
         const MelubangTanamRencana = cells[29] ? cells[29].v : 0;
         const MelubangTanamHariIni = cells[30] ? cells[30].v : 0;
         const MelubangTanamSdHariIni = cells[31] ? cells[31].v : 0;
         const MelubangTanamPersentase = calculatePercentage(MelubangTanamSdHariIni, MelubangTanamRencana);
         
-        // Menutup Lubang Tanam
+        // Menutup Lubang Tanam (33,34,35)
         const MenutupLubangTanamRencana = cells[33] ? cells[33].v : 0;
         const MenutupLubangTanamHariIni = cells[34] ? cells[34].v : 0;
         const MenutupLubangTanamSdHariIni = cells[35] ? cells[35].v : 0;
         const MenutupLubangTanamPersentase = calculatePercentage(MenutupLubangTanamSdHariIni, MenutupLubangTanamRencana);
-        console.log(MenutupLubangTanamSdHariIni);
-        // Menanam KS
+        
+        // Menanam KS (37,38,39)
         const MenanamKSRencana = cells[37] ? cells[37].v : 0;
         const MenanamKSHariIni = cells[38] ? cells[38].v : 0;
         const MenanamKSSdHariIni = cells[39] ? cells[39].v : 0;
         const MenanamKSPersentase = calculatePercentage(MenanamKSSdHariIni, MenanamKSRencana);
         
-        // Total LC
+        // --- DATA BARU ---
+        // Membuat Teras (46, 47, 48)
+        const MembuatTerasRencana = cells[46] ? cells[46].v : 0;
+        const MembuatTerasHariIni = cells[47] ? cells[47].v : 0;
+        const MembuatTerasSdHariIni = cells[48] ? cells[48].v : 0;
+        const MembuatTerasPersentase = calculatePercentage(MembuatTerasSdHariIni, MembuatTerasRencana);
+        
+        // Membuat Jalan Baru (50, 51, 52)
+        const MembuatJalanBaruRencana = cells[50] ? cells[50].v : 0;
+        const MembuatJalanBaruHariIni = cells[51] ? cells[51].v : 0;
+        const MembuatJalanBaruSdHariIni = cells[52] ? cells[52].v : 0;
+        const MembuatJalanBaruPersentase = calculatePercentage(MembuatJalanBaruSdHariIni, MembuatJalanBaruRencana);
+        // --- AKHIR DATA BARU ---
+
+        // Total LC (41, 42)
         const lcRencana = cells[41] ? cells[41].v : 0;
         const lcRealisasi = cells[42] ? cells[42].v : 0;
         const lcPersentase = calculatePercentage(lcRealisasi, lcRencana);
         
-        // Tanggal SPPBJ
+        // Tanggal SPPBJ (44)
         const tanggalSPPBJ = cells[44] ? (cells[44].f || cells[44].v) : '';
         
-        // Hitung jumlah hari kerja secara otomatis
         let jumlahHariKerja = 0;
         if (isValidDateFormat(tanggalSPPBJ)) {
           jumlahHariKerja = calculateDaysDifference(tanggalSPPBJ);
         }
         
-        // Tambahkan ke result hanya jika ada data yang valid
         if (currentKebun && afdName) {
           no++;
           result.push({
@@ -398,6 +437,25 @@ export default {
             namaPaket: namaPaket,
             afd: afdName,
             luasPaket: luasPaket,
+            pembuatanParit: {
+              rencana: PembuatanParitRencana,
+              hariIni: PembuatanParitHariIni,
+              sdHariIni: PembuatanParitSdHariIni,
+              persentase: PembuatanParitPersentase
+            },
+            // Data Baru (Object property urutan tidak mempengaruhi tampilan HTML, tapi saya letakkan di sini)
+            membuatTeras: {
+              rencana: MembuatTerasRencana,
+              hariIni: MembuatTerasHariIni,
+              sdHariIni: MembuatTerasSdHariIni,
+              persentase: MembuatTerasPersentase
+            },
+            membuatJalanBaru: {
+              rencana: MembuatJalanBaruRencana,
+              hariIni: MembuatJalanBaruHariIni,
+              sdHariIni: MembuatJalanBaruSdHariIni,
+              persentase: MembuatJalanBaruPersentase
+            },
             membongkarTunggul: {
               rencana: MembongkarTunggulRencana,
               hariIni: MembongkarTunggulHariIni,
@@ -421,12 +479,6 @@ export default {
               hariIni: lukuHariIni,
               sdHariIni: lukuSdHariIni,
               persentase: lukuPersentase
-            },
-            pembuatanParit: {
-              rencana: PembuatanParitRencana,
-              hariIni: PembuatanParitHariIni,
-              sdHariIni: PembuatanParitSdHariIni,
-              persentase: PembuatanParitPersentase
             },
             menanamMucuna: {
               rencana: MenanamMucunaRencana,
@@ -463,26 +515,21 @@ export default {
         }
       }
       
-      // console.log("DataGridTK: Hasil processedData:", result);
       return result;
     },
     
-    // Filter data berdasarkan filter yang dipilih
     filteredData() {
       if (!this.processedData.length) return [];
       
       return this.processedData.filter(row => {
-        // Filter kebun
         if (this.filters.kebun && row.kebun !== this.filters.kebun) {
           return false;
         }
         
-        // Filter AFD
         if (this.filters.afd && row.afd !== this.filters.afd) {
           return false;
         }
         
-        // Filter search
         if (this.filters.search) {
           const searchLower = this.filters.search.toLowerCase();
           const searchableText = [
@@ -500,6 +547,12 @@ export default {
             row.luku.sdHariIni.toString(),
             row.pembuatanParit.rencana.toString(),
             row.pembuatanParit.sdHariIni.toString(),
+            // Kolom Baru untuk Search
+            row.membuatTeras.rencana.toString(),
+            row.membuatTeras.sdHariIni.toString(),
+            row.membuatJalanBaru.rencana.toString(),
+            row.membuatJalanBaru.sdHariIni.toString(),
+            // Sisa kolom
             row.menanamMucuna.rencana.toString(),
             row.menanamMucuna.sdHariIni.toString(),
             row.lubangTanam.rencana.toString(),
@@ -523,21 +576,17 @@ export default {
       });
     },
     
-    // Group data berdasarkan nama kebun
     groupedData() {
       const groups = {};
-      
       this.filteredData.forEach(row => {
         if (!groups[row.kebun]) {
           groups[row.kebun] = [];
         }
         groups[row.kebun].push(row);
       });
-      
       return groups;
     },
 
-    // Calculate pagination values
     totalPages() {
       if (this.itemsPerPage === 'all') return 1;
       return Math.ceil(this.filteredData.length / this.itemsPerPage);
@@ -554,7 +603,6 @@ export default {
       return end > this.filteredData.length ? this.filteredData.length : end;
     },
     
-    // Create paginated version of grouped data
     paginatedGroupedData() {
       if (this.itemsPerPage === 'all') {
         return this.groupedData;
@@ -563,11 +611,8 @@ export default {
       const result = {};
       const startIndex = (this.currentPage - 1) * this.itemsPerPage;
       const endIndex = startIndex + this.itemsPerPage;
-      
-      // Get the slice of data for the current page
       const pageData = this.filteredData.slice(startIndex, endIndex);
       
-      // Group the page data
       pageData.forEach(row => {
         if (!result[row.kebun]) {
           result[row.kebun] = [];
@@ -629,37 +674,27 @@ export default {
         this.resetPagination();
       }
     },
-    // Metode untuk toggle minimize/maximize grup
     toggleGroup(groupName) {
-      // Menggunakan spread operator untuk mempertahankan reaktivitas di Vue 3
       this.minimizedGroups = {
         ...this.minimizedGroups,
         [groupName]: !this.minimizedGroups[groupName]
       };
     },
-    
-    // Metode untuk minimize semua grup
     minimizeAllGroups() {
       const groupNames = Object.keys(this.groupedData);
       const newMinimizedGroups = {};
-      
       groupNames.forEach(groupName => {
         newMinimizedGroups[groupName] = true;
       });
-      
       this.minimizedGroups = newMinimizedGroups;
       this.allGroupsMinimized = true;
     },
-    
-    // Metode untuk expand semua grup
     expandAllGroups() {
       const groupNames = Object.keys(this.groupedData);
       const newMinimizedGroups = {};
-      
       groupNames.forEach(groupName => {
         newMinimizedGroups[groupName] = false;
       });
-      
       this.minimizedGroups = newMinimizedGroups;
       this.allGroupsMinimized = false;
     }
@@ -667,8 +702,6 @@ export default {
   watch: {
     filteredData() {
       this.resetPagination();
-      
-      // Reset state minimizedGroups ketika data berubah
       this.minimizedGroups = {};
       this.allGroupsMinimized = false;
     },
