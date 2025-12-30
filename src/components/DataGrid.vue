@@ -289,11 +289,19 @@ export default {
       let currentKebun = null;
       let no = 0;
       
-      // Fungsi untuk menghitung persentase
+      // --- LOGIKA PERHITUNGAN PERSEN (UPDATE SESUAI REQUEST) ---
       const calculatePercentage = (realisasi, rencana) => {
-        if (!rencana || rencana === 0) return 0;
-        return (realisasi / rencana) * 100;
+        // 1. Jika rencana 0, anggap 100%
+        if (!rencana || rencana === 0) return 100;
+        
+        const pct = (realisasi / rencana) * 100;
+        
+        // 2. Jika persentase > 100%, batasi menjadi 100%
+        if (pct > 100) return 100;
+        
+        return pct;
       };
+      // ----------------------------------------------------------
       
       // Proses setiap baris
       for (let i = 0; i < rows.length; i++) {
